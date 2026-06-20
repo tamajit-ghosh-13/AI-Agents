@@ -1,0 +1,29 @@
+{
+  "role": "Senior AI Engineer",
+  "required_skills": {
+    "embeddings-based retrieval": 1.0,
+    "vector databases": 1.0,
+    "Python": 0.8,
+    "evaluation frameworks": 1.0,
+    "NDCG": 0.5,
+    "MRR": 0.5,
+    "MAP": 0.5
+  },
+  "preferred_skills": {
+    "LLM fine-tuning": 0.4,
+    "LoRA": 0.3,
+    "QLoRA": 0.3,
+    "learning-to-rank": 0.4,
+    "XGBoost": 0.2,
+    "distributed systems": 0.3,
+    "large-scale inference": 0.3
+  },
+  "disqualified_skills": [
+    "pure research",
+    "only LangChain"
+  ],
+  "experience_range": {
+    "min": 5,
+    "max": 9
+  }
+}

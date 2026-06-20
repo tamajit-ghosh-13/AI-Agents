@@ -1,0 +1,489 @@
+# =============================================================================
+# Company Tiers — Evidence-Weighted Classification Map
+# =============================================================================
+# PHILOSOPHY
+# Tiers are PRIORS, not verdicts. A "service" candidate with strong ownership
+# evidence (metrics, "I built/owned/shipped" language, scoped impact) should
+# outrank a "product" candidate who only lists responsibilities. This file
+# supplies the prior; the Refiner stage (Stage 3) supplies the evidence check
+# that can move a candidate up or down within that prior.
+#
+# Use `tier_weights` as a soft multiplier on the company-pedigree component
+# of the score — never as a hard filter. Use `evidence_required_tiers` to
+# decide which candidates get sent through stricter evidence extraction
+# before their score is finalized.
+#
+# MATCHING NOTES (no code, just rules to implement)
+# - Normalize before matching: lowercase, strip Ltd./Pvt./Inc./Limited,
+#   strip "India"/"Global Technology Center" suffixes used by GCCs.
+# - Check `aliases` map first, then fall back to substring containment
+#   against the canonical names below — company names in raw resumes are
+#   inconsistent ("TCS" vs "Tata Consultancy Services" vs "Tata Consultancy
+#   Services Ltd").
+# - A company not found anywhere in this file falls into `unclassified`,
+#   which carries a NEUTRAL weight — absence of recognition is not evidence
+#   of low quality, and unknown companies (especially small/regional firms,
+#   non-Indian/non-US firms, or new startups) should never be penalized by
+#   default.
+# - `domain_tags` is a SEPARATE, additive dimension from tier — a company
+#   can sit in exactly one tier but carry multiple domain tags (e.g. Stripe
+#   is `product_tier3_growth` AND tagged `fintech`). Domain tags feed the
+#   skill-relevance scorer (Stage 2), not the pedigree prior.
+# =============================================================================
+
+tier_weights:
+  product_tier1: 1.00 # Mega-cap tech, world-class eng bar
+  ai_native: 1.00 # AI-first companies — core-business AI experience
+  product_tier2: 0.95
+  semiconductor_hardware: 0.95
+  product_tier3_growth: 0.90
+  saas_b2b: 0.90
+  gcc_captive: 0.85 # Real eng work, but variable by team/mandate
+  gaming: 0.85
+  strategy_consulting: 0.80 # Strong pedigree, ownership signal varies
+  big4_professional_services: 0.75
+  it_services_tier1: 0.70 # Large-scale IT services — needs evidence
+  it_services_tier2: 0.65
+  staffing_outsourcing: 0.55 # Pure body-shop / agency placement
+  unclassified: 0.75 # Neutral — never penalize what we don't recognize
+
+evidence_required_tiers:
+  - it_services_tier1
+  - it_services_tier2
+  - staffing_outsourcing
+  - big4_professional_services
+  - strategy_consulting
+  - gcc_captive
+
+# -----------------------------------------------------------------------------
+# TIER: product_tier1 — Mega-cap / FAANG-adjacent
+# -----------------------------------------------------------------------------
+product_tier1:
+  - Google
+  - Alphabet
+  - Meta
+  - Amazon
+  - Microsoft
+  - Apple
+  - Netflix
+  - NVIDIA
+  - Adobe
+  - Salesforce
+  - Oracle
+  - SAP Labs
+  - LinkedIn
+  - X Corp
+  - ByteDance
+  - Bloomberg LP
+
+# -----------------------------------------------------------------------------
+# TIER: ai_native — Core business IS AI/ML (highest relevance for this challenge)
+# -----------------------------------------------------------------------------
+# DATASET NOTE: candidates.jsonl (100K pool) contains only 63 unique
+# employer names total. Of those, the entries below marked [IN POOL] are
+# the ones actually present — confirmed by directly scanning the released
+# dataset, not inferred. Several are real but obscure Indian AI/ML startups
+# that were missing from the general-knowledge list below; they are the
+# single highest-signal employer match for this specific JD (core-business
+# AI/ML, India-based, exactly the profile Redrob is hiring for) and were
+# previously absent from this file entirely.
+ai_native:
+  - OpenAI
+  - Anthropic
+  - Cohere
+  - Mistral AI
+  - Hugging Face
+  - Stability AI
+  - Perplexity AI
+  - xAI
+  - Scale AI
+  - Google DeepMind
+  - Inflection AI
+  - Together AI
+  - Character.AI
+  - Glean
+  - Sierra
+  - Harvey
+  - Anysphere (Cursor)
+  - Replit
+  - Krutrim # [IN POOL] 64 mentions
+  - Sarvam AI # [IN POOL] 67 mentions
+  - Fractal Analytics
+  - Genpact AI # [IN POOL] 81 mentions — distinct from parent
+    #   "Genpact" (it_services_tier1). Treated as
+    #   its own entity: this is Genpact's AI/analytics
+    #   arm, doing genuinely different work than the
+    #   staff-aug parent brand. Do NOT let substring
+    #   matching collapse this into "Genpact" — match
+    #   "Genpact AI" as a distinct exact string first.
+  - Glance # [IN POOL] 79 mentions — InMobi-owned AI/content co.
+  - Rephrase.ai # [IN POOL] 72 mentions — generative AI video/voice
+  - Aganitha # [IN POOL] 69 mentions — AI drug-discovery
+  - Niramai # [IN POOL] 69 mentions — AI medical imaging/diagnostics
+  - Saarthi.ai # [IN POOL] 68 mentions — voice AI / conversational AI
+  - Mad Street Den # [IN POOL] 65 mentions — applied AI/computer vision retail
+  - Observe.AI # [IN POOL] 64 mentions — conversation intelligence AI
+  - Wysa # [IN POOL] 63 mentions — AI mental health
+  - Haptik # [IN POOL] 62 mentions — conversational AI (Reliance-owned)
+  - Verloop.io # [IN POOL] 62 mentions — conversational AI/CX
+  - Yellow.ai # [IN POOL] 59 mentions — conversational AI platform
+  - Locobuzz # [IN POOL] 58 mentions — AI-powered social/CX analytics
+
+# -----------------------------------------------------------------------------
+# TIER: product_tier2 — Large, well-established product companies
+# -----------------------------------------------------------------------------
+product_tier2:
+  - Uber
+  - Airbnb
+  - Spotify
+  - Dropbox
+  - Slack
+  - Atlassian
+  - ServiceNow
+  - Workday
+  - Intuit
+  - Shopify
+  - Twilio
+  - Zoom
+  - DocuSign
+  - HubSpot
+  - Flipkart
+  - PhonePe
+  - Paytm
+  - Ola
+  - InMobi
+  - PayPal
+  - Visa
+  - Mastercard
+  - Booking.com
+  - Expedia Group
+  - BYJU'S # [IN POOL] 355 mentions — edtech, large scale despite
+    #   recent well-publicized struggles; pedigree tier
+    #   reflects scale/engineering org size at time of
+    #   employment, not current company health.
+  - upGrad # [IN POOL] 338 mentions — edtech
+
+# -----------------------------------------------------------------------------
+# TIER: product_tier3_growth — Unicorn / high-growth, strong technical bar
+# -----------------------------------------------------------------------------
+product_tier3_growth:
+  - Stripe
+  - Coinbase
+  - Snowflake
+  - Databricks
+  - Plaid
+  - Brex
+  - Ramp
+  - Rippling
+  - Deel
+  - Vercel
+  - Linear
+  - Razorpay
+  - CRED
+  - Groww
+  - Zerodha
+  - Upstox
+  - Slice
+  - Jupiter Money
+  - Meesho
+  - Swiggy
+  - Zomato
+  - Nykaa
+  - Urban Company
+  - Cure.fit (Cult.fit)
+  - Khatabook
+  - BharatPe
+  - Apna
+  - Vedantu # [IN POOL] 350 mentions — edtech
+  - Unacademy # [IN POOL] 341 mentions — edtech
+
+# -----------------------------------------------------------------------------
+# TIER: saas_b2b — Product-grade B2B SaaS, India + global mid-size
+# -----------------------------------------------------------------------------
+saas_b2b:
+  - Freshworks
+  - Zoho
+  - Chargebee
+  - Whatfix
+  - BrowserStack
+  - Postman
+  - Hasura
+  - Innovaccer
+  - Darwinbox
+  - Clevertap
+  - Airtable
+  - Retool
+  - Notion
+  - Figma
+  - Canva
+  - Asana
+  - Smartsheet
+  - PolicyBazaar
+
+# -----------------------------------------------------------------------------
+# TIER: semiconductor_hardware — Chip design, embedded, hardware-systems
+# -----------------------------------------------------------------------------
+semiconductor_hardware:
+  - Intel
+  - AMD
+  - Qualcomm
+  - Texas Instruments
+  - Broadcom
+  - ARM
+  - Micron Technology
+  - Western Digital
+  - Marvell Technology
+  - MediaTek
+  - Cadence Design Systems
+  - Synopsys
+  - Analog Devices
+  - Samsung Semiconductor
+
+# -----------------------------------------------------------------------------
+# TIER: gaming — Game development, real-money gaming, esports infrastructure
+# -----------------------------------------------------------------------------
+gaming:
+  - Electronic Arts
+  - Activision Blizzard
+  - Riot Games
+  - Ubisoft
+  - Unity Technologies
+  - Epic Games
+  - Zynga
+  - Nazara Technologies
+  - Moonfrog Labs
+  - Dream11
+  - Games24x7
+  - Junglee Games
+  - MPL (Mobile Premier League)
+  - Loco
+
+# -----------------------------------------------------------------------------
+# TIER: gcc_captive — Global Capability Centers / in-house tech arms of
+# global non-tech or finance companies (India-heavy; real product/eng work,
+# but mandate and autonomy vary widely by team — hence evidence_required)
+# -----------------------------------------------------------------------------
+gcc_captive:
+  - Walmart Global Tech
+  - Target Corporation (India)
+  - Goldman Sachs (Bengaluru/Hyderabad GCC)
+  - JPMorgan Chase (India GCC)
+  - Morgan Stanley (India GCC)
+  - American Express (India GCC)
+  - Barclays (India GCC)
+  - Wells Fargo (India GCC)
+  - Standard Chartered (GBS)
+  - Citi (India GCC)
+  - Dell Technologies (India)
+  - HPE (India R&D)
+  - Cisco (India R&D)
+  - SAP Labs India
+  - Bosch Global Software Technologies
+  - Siemens Technology and Services
+  - Philips Innovation Campus
+  - John Deere (India Tech Center)
+  - Lowe's India
+  - Albertsons (India GCC)
+
+# -----------------------------------------------------------------------------
+# TIER: strategy_consulting — Strategy/management consulting (distinct from
+# IT outsourcing — pedigree-strong, but ownership of shipped technical work
+# is rarely the candidate's own; weight evidence carefully)
+# -----------------------------------------------------------------------------
+strategy_consulting:
+  - McKinsey & Company
+  - Boston Consulting Group
+  - Bain & Company
+  - Oliver Wyman
+  - Kearney
+  - Strategy&
+
+# -----------------------------------------------------------------------------
+# TIER: big4_professional_services — Audit/tax/advisory firms; distinct from
+# both strategy consulting and IT services outsourcing. Many now run
+# "digital" arms doing genuine engineering — evidence decides which.
+# -----------------------------------------------------------------------------
+big4_professional_services:
+  - Deloitte
+  - PwC
+  - EY
+  - KPMG
+
+# -----------------------------------------------------------------------------
+# TIER: it_services_tier1 — Large-scale IT services / staff-augmentation firms
+# -----------------------------------------------------------------------------
+it_services_tier1:
+  - TCS
+  - Tata Consultancy Services
+  - Infosys
+  - Wipro
+  - Accenture
+  - Cognizant
+  - Capgemini
+  - HCLTech
+  - Tech Mahindra
+  - DXC Technology
+  - IBM Consulting
+  - Genpact
+  - LTIMindtree
+
+# -----------------------------------------------------------------------------
+# TIER: it_services_tier2 — Mid-sized IT services / GIC-adjacent firms
+# -----------------------------------------------------------------------------
+it_services_tier2:
+  - Persistent Systems
+  - Mphasis
+  - Hexaware Technologies
+  - Birlasoft
+  - Sonata Software
+  - Zensar Technologies
+  - Coforge (NIIT Technologies)
+  - Cyient
+  - Mastek
+  - Happiest Minds
+  - Newgen Software
+  - Firstsource Solutions
+
+# -----------------------------------------------------------------------------
+# TIER: staffing_outsourcing — Pure staffing/body-shop placement agencies
+# (distinct from it_services_tier1 — these place contractors at third-party
+# client sites with minimal in-house technical ownership)
+# -----------------------------------------------------------------------------
+staffing_outsourcing:
+  - Randstad
+  - Adecco
+  - ManpowerGroup
+  - Quess Corp
+  - TeamLease
+  - Innovsource
+  - Allegis Group
+  - Collabera
+  - ABC Consultants
+  - Experis
+
+# -----------------------------------------------------------------------------
+# DOMAIN TAGS — additive, cross-cutting attributes used for skill-relevance
+# scoring (Stage 2), independent of pedigree tier above.
+# -----------------------------------------------------------------------------
+domain_tags:
+  fintech:
+    - Stripe
+    - PayPal
+    - Visa
+    - Mastercard
+    - Razorpay
+    - CRED
+    - Groww
+    - Zerodha
+    - Upstox
+    - Slice
+    - Jupiter Money
+    - PhonePe
+    - Paytm
+    - PolicyBazaar
+    - Plaid
+    - BharatPe
+
+  ecommerce_retail:
+    - Flipkart
+    - Myntra
+    - Meesho
+    - Nykaa
+    - Amazon
+    - Walmart Global Tech
+    - BigBasket
+    - Blinkit
+    - Zepto
+
+  mobility_logistics:
+    - Uber
+    - Ola
+    - Rapido
+    - Delhivery
+    - Porter
+    - Shadowfax
+    - BlackBuck
+    - Ecom Express
+
+  food_delivery:
+    - Swiggy
+    - Zomato
+
+  healthtech:
+    - Innovaccer
+    - Practo
+    - PharmEasy
+    - Cure.fit (Cult.fit)
+    - Philips Innovation Campus
+    - Niramai # [IN POOL] AI medical imaging
+    - Wysa # [IN POOL] AI mental health
+
+  edtech:
+    - BYJU'S # [IN POOL]
+    - upGrad # [IN POOL]
+    - Vedantu # [IN POOL]
+    - Unacademy # [IN POOL]
+
+  conversational_ai_cx:
+    # Domain tag for the cluster of India conversational-AI/CX startups
+    # found in the dataset — relevant signal if JD ever touches dialogue
+    # systems, NLU, or customer-experience AI (this JD's core ask is
+    # retrieval/ranking, so weight this tag lower than embeddings/retrieval
+    # skill matches, but it's still real applied-NLP production experience).
+    - Haptik # [IN POOL]
+    - Verloop.io # [IN POOL]
+    - Yellow.ai # [IN POOL]
+    - Observe.AI # [IN POOL]
+    - Saarthi.ai # [IN POOL]
+    - Locobuzz # [IN POOL]
+
+  travel_hospitality:
+    - MakeMyTrip
+    - OYO
+    - Airbnb
+    - Booking.com
+    - Expedia Group
+    - Cleartrip
+    - Yatra
+
+# -----------------------------------------------------------------------------
+# ALIASES — canonical-name normalization for messy resume text
+# -----------------------------------------------------------------------------
+aliases:
+  Meta: Facebook
+  X Corp: Twitter
+  Block: Square
+  TCS: Tata Consultancy Services
+  HCLTech: HCL Technologies
+  Coforge: NIIT Technologies
+  LTIMindtree: Mindtree
+  Google DeepMind: DeepMind
+  Anysphere (Cursor): Cursor
+  Cure.fit (Cult.fit): CureFit
+
+# -----------------------------------------------------------------------------
+# unclassified — implicit catch-all. No list needed: any company not found
+# in a tier or alias above is scored at the `unclassified` weight (0.75,
+# strictly neutral — neither rewarded nor penalized for pedigree).
+#
+# DATASET NOTE — read this before wiring the matcher:
+# The 100K pool's single largest employer-name cluster is NOT a real
+# company at all. These eight fictional/pop-culture placeholder names
+# account for ~23,400–23,720 mentions EACH (by far the most common
+# employers in the entire pool — more common than TCS or Infosys):
+#   Pied Piper, Initech, Wayne Enterprises, Acme Corp, Stark Industries,
+#   Hooli, Globex Inc, Dunder Mifflin
+# These are almost certainly the generic filler employer used across the
+# ~70K candidates with off-domain titles (Business Analyst, HR Manager,
+# Mechanical Engineer, Accountant, Project Manager, Customer Support,
+# Operations Manager, Content Writer, Sales Executive, Civil Engineer,
+# Graphic Designer, Marketing Manager — each ~5,500–5,800 candidates).
+# They correctly fall through to `unclassified` (neutral 0.75) under this
+# file's existing matching rules — do NOT add them to any tier, and do
+# NOT let a fuzzy/substring matcher try to map "Stark Industries" to a
+# real-world tier. Their presence is a deliberate sign that company name
+# alone is a weak signal for ~70% of this pool; title and career_history
+# description carry far more weight than employer pedigree for the bulk
+# of these candidates, since the employer name itself was never meant to
+# be informative for them.
+# -----------------------------------------------------------------------------
