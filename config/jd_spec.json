@@ -1,29 +1,1062 @@
 {
-  "role": "Senior AI Engineer",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "2.0.0",
+  "generated_from": "job_description.docx + redrob_signals_doc.docx + dataset_analysis_v2",
+  "meta": {
+    "role": "Senior AI Engineer",
+    "seniority": "Senior / Founding Team Member",
+    "company": "Redrob AI",
+    "company_stage": "Series A",
+    "employment_type": "Full-time",
+    "_CRITICAL": [
+      "Disqualifiers (DQ1-DQ7) MUST be implemented as explicit rule modules that run BEFORE score aggregation.",
+      "They are NOT soft weights to absorb into math. The JD text is explicit on these — a judge re-reading the JD against your output WILL check for them.",
+      "Semantic/embedding match is a SUPPORTING signal, not the primary driver. The JD warns against keyword stuffing as its first hackathon note.",
+      "Production evidence from career_history[].description is the highest-weight single signal."
+    ]
+  },
+
+  "experience": {
+    "stated_range_years": { "min": 5, "max": 9 },
+    "ideal_range_years": { "min": 6, "max": 8 },
+    "applied_ml_at_product_company_min_years": 4,
+    "_note": "Band is a guide, not a hard filter. Override with strong signals elsewhere. Do NOT hard-reject on years alone.",
+    "scoring_curve": {
+      "lt_3.0": 0.3,
+      "3.0_4.9": 0.65,
+      "5.0_5.9": 0.85,
+      "6.0_8.0": 1.0,
+      "8.1_9.0": 0.92,
+      "9.1_11.0": 0.75,
+      "gt_11.0": 0.55
+    }
+  },
+
+  "location": {
+    "preferred": ["Pune", "Noida"],
+    "welcome": [
+      "Hyderabad",
+      "Mumbai",
+      "Delhi",
+      "Delhi NCR",
+      "Delhi-NCR",
+      "Bengaluru",
+      "Bangalore"
+    ],
+    "india_other_acceptable": true,
+    "outside_india_policy": "case_by_case",
+    "visa_sponsorship": false,
+    "_note": "Outside India is NOT an auto-reject — it is a real headwind. Represent in score, not as a disqualifier. Example: strong Toronto candidate still in scope but scored down.",
+    "scoring": {
+      "preferred_cities": 1.0,
+      "welcome_cities": 0.85,
+      "india_other": 0.6,
+      "outside_india": 0.25
+    },
+    "relocation_bonus": {
+      "willing_to_relocate_true": 0.1,
+      "_note": "Add to location score only if candidate is NOT already in preferred/welcome city."
+    }
+  },
+
+  "notice_period": {
+    "ideal_max_days": 30,
+    "buyout_cap_days": 30,
+    "_note": "30+ day notice is still in scope but the bar gets higher per JD.",
+    "scoring": {
+      "0_30": 1.0,
+      "31_60": 0.8,
+      "61_90": 0.55,
+      "91_180": 0.3
+    }
+  },
+
   "required_skills": {
-    "embeddings-based retrieval": 1.0,
-    "vector databases": 1.0,
-    "Python": 0.8,
-    "evaluation frameworks": 1.0,
-    "NDCG": 0.5,
-    "MRR": 0.5,
-    "MAP": 0.5
+    "_meta": "All four are critical. Missing any one is a strong negative signal — not just a weight reduction. Required skills have a floor: if a candidate scores 0 on two or more of these, cap total score at 0.40 regardless of other components.",
+
+    "embeddings_retrieval": {
+      "weight": 1.0,
+      "must_be_production": true,
+      "surface_forms_skills_array": [
+        "sentence-transformers",
+        "SentenceTransformers",
+        "BGE",
+        "bge-large",
+        "bge-base",
+        "E5",
+        "e5-large",
+        "e5-small",
+        "OpenAI embeddings",
+        "text-embedding-ada",
+        "text-embedding-3-small",
+        "text-embedding-3-large",
+        "Cohere embeddings",
+        "dense retrieval",
+        "bi-encoder",
+        "cross-encoder",
+        "dual encoder",
+        "semantic search",
+        "embedding model",
+        "embedding pipeline",
+        "RAG",
+        "retrieval-augmented generation",
+        "document retrieval",
+        "embedding drift",
+        "index refresh",
+        "retrieval quality regression"
+      ],
+      "surface_forms_description_mining": [
+        "embedding",
+        "embeddings",
+        "semantic retrieval",
+        "dense passage retrieval",
+        "DPR",
+        "RAG",
+        "retrieval pipeline",
+        "bi-encoder",
+        "cross-encoder",
+        "re-ranker",
+        "deployed embedding",
+        "embedding in production",
+        "MTEB",
+        "recall@"
+      ],
+      "production_proof_phrases": [
+        "deployed to production",
+        "served [N] users",
+        "reduced retrieval latency",
+        "embedding drift",
+        "index refresh cadence",
+        "retrieval quality regression",
+        "retrieval pipeline in production",
+        "recall@ improved"
+      ]
+    },
+
+    "vector_databases_hybrid_search": {
+      "weight": 1.0,
+      "must_be_production": true,
+      "surface_forms_skills_array": [
+        "Pinecone",
+        "Weaviate",
+        "Qdrant",
+        "Milvus",
+        "Chroma",
+        "LanceDB",
+        "OpenSearch",
+        "Elasticsearch",
+        "FAISS",
+        "Annoy",
+        "ScaNN",
+        "HNSWlib",
+        "hybrid search",
+        "BM25",
+        "sparse-dense fusion",
+        "RRF",
+        "reciprocal rank fusion",
+        "vector store",
+        "ANN",
+        "approximate nearest neighbor",
+        "pgvector",
+        "Redis Search"
+      ],
+      "surface_forms_description_mining": [
+        "vector database",
+        "vector store",
+        "vector index",
+        "ANN index",
+        "HNSW",
+        "IVF",
+        "Elasticsearch",
+        "OpenSearch",
+        "hybrid search",
+        "BM25",
+        "sparse retrieval",
+        "keyword search combined",
+        "Pinecone",
+        "Qdrant",
+        "Weaviate",
+        "Milvus",
+        "FAISS index",
+        "production search",
+        "search pipeline"
+      ],
+      "production_proof_phrases": [
+        "maintained vector index",
+        "scaled to [N] vectors",
+        "index refresh",
+        "vector search in production",
+        "hybrid search pipeline",
+        "latency @ p99",
+        "QPS",
+        "queries per second"
+      ]
+    },
+
+    "python_code_quality": {
+      "weight": 0.8,
+      "_note": "JD says 'yes really, we care about code quality'. This is not just skill presence.",
+      "surface_forms_skills_array": ["Python", "Python3", "Python 3"],
+      "quality_signal_bonus": {
+        "pytest": 0.05,
+        "mypy": 0.05,
+        "type hints": 0.03,
+        "CI/CD": 0.03,
+        "code review": 0.03,
+        "profiling": 0.03,
+        "_note": "Additive bonuses, capped at +0.10 total on this component."
+      }
+    },
+
+    "ranking_evaluation_frameworks": {
+      "weight": 1.0,
+      "must_be_hands_on": true,
+      "_note": "This is harder to fake than skill keywords — look for it in career_history descriptions, not just skills[].",
+      "surface_forms_skills_array": [
+        "NDCG",
+        "MRR",
+        "MAP",
+        "mean average precision",
+        "mean reciprocal rank",
+        "P@K",
+        "recall@K",
+        "precision@K",
+        "evaluation framework",
+        "A/B testing",
+        "A/B test",
+        "online evaluation",
+        "offline evaluation",
+        "offline-to-online",
+        "ranking evaluation",
+        "relevance judgment",
+        "information retrieval",
+        "IR metrics",
+        "learning-to-rank evaluation"
+      ],
+      "surface_forms_description_mining": [
+        "NDCG",
+        "MRR",
+        "MAP",
+        "A/B test",
+        "evaluation framework",
+        "offline benchmark",
+        "online experiment",
+        "relevance labels",
+        "recall@",
+        "precision@",
+        "ranking quality",
+        "retrieval metrics",
+        "designed evaluation",
+        "built evaluation",
+        "set up evaluation"
+      ],
+      "production_proof_phrases": [
+        "built evaluation framework",
+        "designed offline benchmark",
+        "set up A/B testing infrastructure",
+        "improved NDCG by",
+        "offline-to-online correlation",
+        "recruiter-feedback loop"
+      ]
+    }
   },
+
   "preferred_skills": {
-    "LLM fine-tuning": 0.4,
-    "LoRA": 0.3,
-    "QLoRA": 0.3,
-    "learning-to-rank": 0.4,
-    "XGBoost": 0.2,
-    "distributed systems": 0.3,
-    "large-scale inference": 0.3
+    "_meta": "Positive signals, not requirements. Diminishing returns: count only the top 3 matches when aggregating. A candidate with 6 preferred skills should NOT double-score a candidate with 3.",
+
+    "llm_finetuning": {
+      "weight": 0.4,
+      "surface_forms": [
+        "LoRA",
+        "QLoRA",
+        "PEFT",
+        "fine-tuning",
+        "finetuning",
+        "SFT",
+        "RLHF",
+        "DPO",
+        "instruction tuning",
+        "adapter tuning",
+        "parameter-efficient fine-tuning",
+        "model fine-tuning"
+      ]
+    },
+    "learning_to_rank": {
+      "weight": 0.4,
+      "surface_forms": [
+        "LambdaRank",
+        "LambdaMART",
+        "XGBoost",
+        "LightGBM",
+        "RankNet",
+        "learning to rank",
+        "LTR",
+        "pairwise ranking",
+        "listwise ranking",
+        "pointwise ranking",
+        "LambdaLoss",
+        "Rank SVM"
+      ]
+    },
+    "nlp_ir_depth": {
+      "weight": 0.35,
+      "surface_forms": [
+        "NLP",
+        "natural language processing",
+        "information retrieval",
+        "text classification",
+        "NER",
+        "named entity recognition",
+        "BERT",
+        "RoBERTa",
+        "T5",
+        "transformers",
+        "HuggingFace",
+        "question answering",
+        "summarization",
+        "reranking",
+        "cross-encoder reranking"
+      ]
+    },
+    "hrtech_marketplace": {
+      "weight": 0.3,
+      "surface_forms": [
+        "HR-tech",
+        "HR tech",
+        "talent intelligence",
+        "ATS",
+        "recruiting tech",
+        "talent acquisition",
+        "candidate ranking",
+        "JD matching",
+        "two-sided marketplace",
+        "marketplace ranking"
+      ]
+    },
+    "distributed_inference": {
+      "weight": 0.3,
+      "surface_forms": [
+        "distributed systems",
+        "large-scale inference",
+        "low-latency serving",
+        "TorchServe",
+        "Triton Inference Server",
+        "vLLM",
+        "Ray Serve",
+        "TensorRT",
+        "model serving",
+        "inference optimization",
+        "quantization",
+        "distillation",
+        "ONNX",
+        "model compression"
+      ]
+    },
+    "oss_external_validation": {
+      "weight": 0.3,
+      "_note": "Cannot reliably detect from text alone. Use github_activity_score and certifications as the primary proxy. Text keywords are secondary.",
+      "proxy_fields": {
+        "github_activity_score_gte_40": "+0.30 weight fully applied",
+        "github_activity_score_20_39": "+0.15 partial credit",
+        "certifications_count_gte_2": "+0.10 partial credit"
+      },
+      "surface_forms": [
+        "open source",
+        "OSS",
+        "GitHub",
+        "paper",
+        "publication",
+        "conference",
+        "blog post",
+        "technical talk",
+        "speaker",
+        "contributor"
+      ]
+    },
+    "hybrid_retrieval": {
+      "weight": 0.25,
+      "surface_forms": [
+        "BM25",
+        "TF-IDF",
+        "hybrid retrieval",
+        "sparse retrieval",
+        "keyword search",
+        "Lucene",
+        "inverted index",
+        "sparse-dense"
+      ]
+    }
   },
-  "disqualified_skills": [
-    "pure research",
-    "only LangChain"
-  ],
-  "experience_range": {
-    "min": 5,
-    "max": 9
+
+  "disqualifier_rules": {
+    "_CRITICAL": [
+      "Implement each DQ as an independent rule module that runs BEFORE final score aggregation.",
+      "DQ modules take candidate -> (is_triggered: bool, severity: enum, multiplier: float).",
+      "Hard rejects set final_score = 0.0 and skip all further stages.",
+      "Soft rejects apply score_multiplier AFTER base scoring is complete.",
+      "Do NOT combine DQ logic with skill scoring math — keep them separate so each is auditable."
+    ],
+
+    "DQ1_pure_research_career": {
+      "severity": "hard_reject",
+      "score_multiplier": 0.0,
+      "jd_quote": "we will not move forward",
+      "trigger_condition": "ALL THREE signals must fire together — do not hard-reject on any single signal alone",
+      "signals": {
+        "A": "ALL career_history[].title values contain 'Research', 'Researcher', 'Scientist', or employer is a university/national lab",
+        "B": "ZERO occurrence of production-evidence verbs across ALL career_history[].description: deployed, shipped, production, launched, served [N] users, live system",
+        "C": "ALL career_history[].company are universities, academic labs, or explicit research institutes (not product companies)"
+      },
+      "_note": "One research role inside a product-company career is NOT this. Check the ENTIRE career, not just current/recent."
+    },
+
+    "DQ2_shallow_ai_experience": {
+      "severity": "soft_reject",
+      "score_multiplier": 0.35,
+      "description": "AI experience = only recent (<12mo) LangChain/OpenAI wrapper projects with no pre-LLM-era ML production history",
+      "trigger_condition": "ALL THREE must fire",
+      "signals": {
+        "A": "All career_history entries containing ML/AI descriptions have start_date after 2022-06-01",
+        "B": "AI descriptions mention only framework wrappers (LangChain, ChatGPT API, OpenAI API, GPT-4) without retrieval/ranking/recommendation architecture depth",
+        "C": "No evidence anywhere of pre-LLM-era production ML: recommendation engines, ranking systems, search pipelines, embedding models, NDCG/MRR optimization"
+      },
+      "override": "ANY single pre-2022 ML production deployment mention negates DQ2 entirely"
+    },
+
+    "DQ3_non_coding_senior": {
+      "severity": "soft_reject",
+      "score_multiplier": 0.5,
+      "description": "Senior title with 18+ months of no individual code contribution evidence",
+      "trigger_condition": "BOTH signals must fire on the CURRENT or MOST RECENT role",
+      "signals": {
+        "A": {
+          "title_pattern": "Current/most recent title matches any of:",
+          "titles": [
+            "Principal Engineer",
+            "Distinguished Engineer",
+            "Staff Engineer",
+            "Engineering Manager",
+            "VP Engineering",
+            "Chief Architect",
+            "Technical Director",
+            "Head of Engineering",
+            "CTO"
+          ]
+        },
+        "B": "Description of current/most recent role contains ONLY leadership/coordination verbs (led, defined, mentored, planned, strategized, reviewed, managed) with ZERO individual technical contribution verbs (built, implemented, wrote, coded, shipped, deployed, trained, fine-tuned)"
+      },
+      "time_threshold_months": 18,
+      "_note": "Apply ONLY to current/recent role. A candidate who was EM for 2 years but before that shipped production ML is still viable — the prior ML work counts."
+    },
+
+    "DQ4_title_inflation_hopper": {
+      "severity": "soft_reject",
+      "score_multiplier": 0.55,
+      "description": "Title escalation (Junior→SDE→Senior→Staff→Principal) with <18 months per promoted rung",
+      "trigger_condition": "TWO OR MORE consecutive upward title promotions each with duration_months < 18",
+      "title_hierarchy": [
+        "Junior",
+        "Associate",
+        "SDE I",
+        "SDE",
+        "Software Engineer",
+        "Senior SDE",
+        "Senior Software Engineer",
+        "Senior",
+        "Staff",
+        "Staff Engineer",
+        "Principal",
+        "Distinguished"
+      ],
+      "threshold_months_per_rung": 18,
+      "_IMPORTANT": [
+        "This is NOT generic job-hopping detection.",
+        "A lateral move (same title, different company) does NOT trigger this.",
+        "Only UPWARD title promotions with short tenure trigger this.",
+        "Check the difference in title hierarchy level, not just company switches."
+      ]
+    },
+
+    "DQ5_pure_consulting_background": {
+      "severity": "soft_reject",
+      "score_multiplier": 0.45,
+      "description": "Entire career at IT services/outsourcing firms with zero product-company experience",
+      "trigger_condition": "ALL career_history[].company map to the consulting/services tier AND no override condition fires",
+      "consulting_firms_canonical": [
+        "TCS",
+        "Tata Consultancy Services",
+        "Infosys",
+        "Wipro",
+        "Accenture",
+        "Cognizant",
+        "Capgemini",
+        "HCL",
+        "HCLTech",
+        "Tech Mahindra",
+        "DXC Technology",
+        "IBM Consulting",
+        "Genpact",
+        "LTIMindtree",
+        "Mphasis",
+        "Hexaware",
+        "Persistent Systems",
+        "Birlasoft",
+        "Zensar",
+        "Coforge",
+        "Mastech",
+        "iGate"
+      ],
+      "_note": "Cross-check against company_tiers.yaml `it_services_tier1` and `it_services_tier2` lists for the authoritative source.",
+      "override_conditions": [
+        "ANY single career_history entry at a product company (product_tier1, product_tier2, product_tier3_growth, saas_b2b, ai_native, gcc_captive from company_tiers.yaml)",
+        "Strong ownership verbs in consulting role descriptions: 'shipped', 'owned end-to-end', 'built from scratch', 'deployed to production', 'I designed and built'"
+      ],
+      "_note_on_overrides": "JD says: 'currently at one of these but prior product-company experience = fine.' Check ENTIRE career, not just current company."
+    },
+
+    "DQ6_wrong_primary_domain": {
+      "severity": "reject",
+      "score_multiplier": 0.2,
+      "description": "Primary expertise is CV/speech/robotics with no cross-domain NLP/IR exposure",
+      "cv_speech_robotics_signals": [
+        "Computer Vision",
+        "CV",
+        "Image Recognition",
+        "Object Detection",
+        "YOLO",
+        "YOLOv5",
+        "YOLOv8",
+        "Convolutional Neural Network",
+        "CNN",
+        "ResNet",
+        "ViT",
+        "Vision Transformer",
+        "image segmentation",
+        "depth estimation",
+        "Speech Recognition",
+        "ASR",
+        "TTS",
+        "Text-to-Speech",
+        "Whisper",
+        "voice recognition",
+        "acoustic model",
+        "language model for speech",
+        "Robotics",
+        "ROS",
+        "Robot Operating System",
+        "SLAM",
+        "autonomous driving",
+        "motion planning",
+        "sensor fusion"
+      ],
+      "nlp_ir_salvage_signals": [
+        "NLP",
+        "natural language processing",
+        "information retrieval",
+        "text",
+        "search",
+        "ranking",
+        "retrieval",
+        "BERT",
+        "transformer",
+        "language model",
+        "embedding",
+        "question answering",
+        "text classification"
+      ],
+      "trigger_logic": "IF (count(cv_speech_robotics_signals in full profile) / count(all_ml_signals) > 0.65) AND (count(nlp_ir_salvage_signals) == 0) THEN trigger",
+      "_note": "The domain check should scan BOTH skills[] array AND career_history[].description. A CV engineer who spent 2 years on NLP retrieval is salvageable."
+    },
+
+    "DQ7_closed_source_only": {
+      "severity": "reject",
+      "score_multiplier": 0.3,
+      "description": "5+ years entirely on closed-source proprietary systems with zero external validation",
+      "apply_only_if": "profile.years_of_experience >= 5",
+      "trigger_condition": "ALL THREE proxy signals fire",
+      "signals": {
+        "A": "redrob_signals.github_activity_score <= 10 OR == -1",
+        "B": "certifications array is empty OR has fewer than 2 entries",
+        "C": "No external validation keywords in ANY field: 'paper', 'publication', 'open source', 'OSS', 'GitHub', 'conference', 'blog', 'talk', 'speaker', 'arxiv', 'NeurIPS', 'ICML', 'ACL', 'EMNLP', 'SIGIR'"
+      },
+      "_note": "This DQ is probabilistic, not deterministic. Three weak proxies together, not a hard signal. Weight accordingly — treat as a score multiplier of 0.30, not a hard reject. Only apply to product-company candidates (consulting candidates already penalized by DQ5)."
+    }
+  },
+
+  "production_evidence_keyword_taxonomy": {
+    "_meta": "This taxonomy drives career_history[].description mining. It is the MOST IMPORTANT scoring signal in the pipeline. A candidate whose description contains Tier A phrases is more valuable than one whose skills[] array matches perfectly.",
+
+    "tier_A_highest_value": {
+      "weight_per_match": 0.2,
+      "max_contribution": 1.0,
+      "keywords": [
+        "deployed to production",
+        "in production",
+        "production system",
+        "shipped to [N] users",
+        "served [N] users",
+        "serving [N] requests",
+        "reduced latency by",
+        "improved recall@",
+        "improved NDCG",
+        "NDCG improved",
+        "MRR improved",
+        "A/B test showed",
+        "A/B experiment",
+        "online experiment",
+        "offline benchmark",
+        "embedding pipeline",
+        "vector index",
+        "hybrid search pipeline",
+        "re-ranker",
+        "reranker",
+        "retrieval system",
+        "ranking system",
+        "recommendation engine",
+        "search system at scale",
+        "reduced p99 by",
+        "throughput improvement",
+        "QPS",
+        "queries per second",
+        "inference at scale",
+        "model serving",
+        "offline-to-online correlation",
+        "evaluation framework",
+        "recruiter feedback loop"
+      ]
+    },
+
+    "tier_B_strong_signal": {
+      "weight_per_match": 0.1,
+      "max_contribution": 0.5,
+      "keywords": [
+        "built from scratch",
+        "owned the",
+        "owned end-to-end",
+        "led the development",
+        "shipped v1",
+        "launched",
+        "real users",
+        "live system",
+        "integrated into product",
+        "improved by X%",
+        "reduced by X%",
+        "scaled to",
+        "end-to-end pipeline",
+        "mentored engineers on",
+        "defined the architecture of",
+        "set up the evaluation",
+        "designed the ranking",
+        "built the retrieval",
+        "pre-LLM",
+        "before GPT",
+        "embedding-based search"
+      ]
+    },
+
+    "tier_C_weak_positive": {
+      "weight_per_match": 0.03,
+      "max_contribution": 0.15,
+      "keywords": [
+        "implemented",
+        "developed",
+        "built",
+        "created",
+        "designed",
+        "trained model",
+        "fine-tuned",
+        "experimented with",
+        "worked on",
+        "contributed to",
+        "involved in"
+      ]
+    },
+
+    "negative_evidence": {
+      "weight_per_match": -0.05,
+      "max_penalty": -0.2,
+      "keywords": [
+        "research project",
+        "academic project",
+        "course project",
+        "POC",
+        "proof of concept",
+        "prototype only",
+        "demo",
+        "tutorial",
+        "sandbox environment",
+        "Jupyter notebook",
+        "Colab notebook",
+        "personal project",
+        "side project"
+      ],
+      "_note": "Negative evidence from description does NOT negate required skill presence in skills[]. It only reduces the description mining component score."
+    }
+  },
+
+  "honeypot_detection": {
+    "_meta": "Honeypots are forced to relevance tier 0 in ground truth. >10% in top 100 = Stage 3 disqualification. Your system should naturally avoid them with good production evidence scoring, but add explicit checks to be safe.",
+
+    "checks": [
+      {
+        "id": "HP1",
+        "name": "experience_vs_career_sum",
+        "formula": "profile.years_of_experience > (sum(career_history[].duration_months) / 12) * 1.15",
+        "tolerance_months": 6,
+        "_note": "Dataset confirmed: one candidate claims 3.0 years but career sums to 61 months. Flag anything where claimed exp exceeds career sum by more than 10%."
+      },
+      {
+        "id": "HP2",
+        "name": "skill_duration_vs_career_total",
+        "formula": "ANY skills[].duration_months > sum(career_history[].duration_months)",
+        "_note": "A skill duration cannot exceed the total career length."
+      },
+      {
+        "id": "HP3",
+        "name": "expert_skill_zero_duration",
+        "formula": "count(skills[] WHERE proficiency=='expert' AND duration_months==0) >= 3",
+        "_note": "'Expert' proficiency with zero months used is a strong contradiction."
+      },
+      {
+        "id": "HP4",
+        "name": "company_founding_year_tenure",
+        "formula": "tenure_at_company_years > (current_year - company_founding_year)",
+        "data_source": "company_tiers.yaml or external lookup if founding_year known",
+        "_note": "Only applicable for companies where founding year is known. Cannot check for fictional employers — they correctly fall to unclassified."
+      },
+      {
+        "id": "HP5",
+        "name": "age_proxy_vs_experience",
+        "formula": "IF education[0].end_year is known: years_of_experience > (current_year - education[0].end_year) + 2",
+        "_note": "+2 year buffer for gap years, late graduation, etc. Be conservative."
+      }
+    ],
+    "action": "Flag candidate as honeypot. Set score = 0.0. Log reason. Do NOT include in top 100.",
+    "disqualification_threshold": "More than 9 honeypots in your final top-100 = contest disqualification at Stage 3."
+  },
+
+  "title_sieve": {
+    "_meta": "Run this FIRST, before any other computation. O(N) string matching. Eliminates ~70,000 of 100,000 candidates in milliseconds. No embeddings, no NLP, just exact/substring match.",
+
+    "hard_eliminate": {
+      "action": "Set score = 0.0. Skip all downstream stages entirely.",
+      "titles": [
+        "Business Analyst",
+        "HR Manager",
+        "HR Executive",
+        "Human Resources Manager",
+        "Mechanical Engineer",
+        "Accountant",
+        "Senior Accountant",
+        "Finance Manager",
+        "Project Manager",
+        "Customer Support",
+        "Customer Service Representative",
+        "Operations Manager",
+        "Content Writer",
+        "Content Strategist",
+        "Sales Executive",
+        "Sales Manager",
+        "Account Executive",
+        "Civil Engineer",
+        "Structural Engineer",
+        "Graphic Designer",
+        "UI Designer",
+        "UX Designer",
+        "Marketing Manager",
+        "Digital Marketing Manager",
+        "SEO Specialist",
+        "Brand Manager",
+        "Recruitment Manager",
+        "Talent Acquisition Specialist",
+        "Supply Chain Manager",
+        "Logistics Manager",
+        "Warehouse Manager"
+      ]
+    },
+
+    "conditional_pass": {
+      "action": "Pass to Stage 2 with base_score_penalty = -0.10. REQUIRE career_history description mining to surface any ML work before assigning credit.",
+      "_note": "These are the ~26K 'hidden gem' candidates. Title alone cannot rank them — description mining decides.",
+      "titles": [
+        "Software Engineer",
+        "Senior Software Engineer",
+        "Full Stack Engineer",
+        "Backend Engineer",
+        "Full Stack Developer",
+        "Backend Developer",
+        "Cloud Engineer",
+        "Java Engineer",
+        ".NET Engineer",
+        "Node.js Engineer",
+        "DevOps Engineer",
+        "SRE",
+        "Site Reliability Engineer",
+        "Mobile Engineer",
+        "iOS Engineer",
+        "Android Engineer",
+        "Frontend Engineer",
+        "QA Engineer",
+        "Test Engineer",
+        "Data Analyst",
+        "Analytics Engineer",
+        "Business Intelligence Developer",
+        "Data Engineer",
+        "Senior Data Engineer",
+        "ETL Engineer"
+      ]
+    },
+
+    "direct_pass_with_scrutiny": {
+      "action": "Pass with neutral base score. Apply all DQ checks. This is where the ~900 ML/AI title candidates land.",
+      "titles": [
+        "ML Engineer",
+        "Machine Learning Engineer",
+        "Senior Machine Learning Engineer",
+        "Data Scientist",
+        "Senior Data Scientist",
+        "Lead Data Scientist",
+        "NLP Engineer",
+        "AI Engineer",
+        "Senior AI Engineer",
+        "Lead AI Engineer",
+        "Search Engineer",
+        "Recommendation Engineer",
+        "Ranking Engineer",
+        "Applied ML Engineer",
+        "Applied Scientist",
+        "Research Engineer",
+        "LLM Engineer",
+        "RAG Engineer",
+        "Conversational AI Engineer"
+      ]
+    },
+
+    "soft_red_flag_titles": {
+      "action": "Pass with base_score_penalty = -0.10 AND mandatory DQ6 (wrong_primary_domain) check. Do NOT reward title-domain match before DQ6 clears.",
+      "_note": "153 AI Research Engineers and 132 Computer Vision Engineers in pool. Both are explicitly called out as soft red flags in the JD.",
+      "titles": [
+        "AI Research Engineer",
+        "Research Scientist",
+        "ML Research Scientist",
+        "Computer Vision Engineer",
+        "Computer Vision Researcher",
+        "Speech Engineer",
+        "Speech Recognition Engineer",
+        "ASR Engineer",
+        "Robotics Engineer",
+        "Autonomous Systems Engineer"
+      ]
+    }
+  },
+
+  "behavioral_signal_model": {
+    "_meta": [
+      "Apply as a MULTIPLICATIVE modifier on the technical score, not as an additive component.",
+      "Formula: final_score = technical_component_score * availability_multiplier * engagement_multiplier",
+      "JD explicitly says: 'Down-weight inactive/unresponsive candidates even if perfect on paper.' This is lifted directly from JD text."
+    ],
+
+    "availability_multiplier": {
+      "formula": "multiply all three sub-components together",
+      "days_since_last_active": {
+        "_note": "Compute from: current_date - redrob_signals.last_active_date",
+        "0_to_30_days": 1.0,
+        "31_to_60_days": 0.9,
+        "61_to_90_days": 0.8,
+        "91_to_180_days": 0.65,
+        "181_to_365_days": 0.45,
+        "gt_365_days": 0.25
+      },
+      "open_to_work_flag": {
+        "true": 1.05,
+        "false": 0.9
+      },
+      "recruiter_response_rate": {
+        "gte_0.70": 1.1,
+        "0.40_0.69": 1.0,
+        "0.20_0.39": 0.85,
+        "lt_0.20": 0.7
+      }
+    },
+
+    "engagement_multiplier": {
+      "formula": "weighted_average(components) -> scale to [0.70, 1.00]",
+      "scale_formula": "0.70 + (weighted_avg * 0.30)",
+      "components": {
+        "interview_completion_rate": {
+          "weight": 0.3,
+          "value": "redrob_signals.interview_completion_rate directly (already 0-1)"
+        },
+        "profile_completeness_score": {
+          "weight": 0.2,
+          "value": "redrob_signals.profile_completeness_score / 100"
+        },
+        "relevant_skill_assessment_scores": {
+          "weight": 0.3,
+          "value": "average of redrob_signals.skill_assessment_scores values for ML/Python/DS/AI keys only",
+          "normalize": "divide_by_100",
+          "_note": "Ignore assessments for non-relevant skills (e.g. Excel, PowerPoint). Only score AI/ML/Python/DS assessments."
+        },
+        "github_activity_score": {
+          "weight": 0.2,
+          "value_formula": "IF score == -1 THEN 0.0 ELSE score / 100",
+          "_note": "github_activity_score = -1 means no GitHub linked. Treat as 0.0, NOT as a negative. Missing data ≠ bad data."
+        }
+      }
+    },
+
+    "notice_period_integration": {
+      "_note": "Apply notice period scoring from the notice_period section as a separate multiplicative factor AFTER behavioral multiplier.",
+      "formula": "final_score = technical_score * availability_multiplier * engagement_multiplier * notice_period_score"
+    }
+  },
+
+  "scoring_architecture": {
+    "_meta": "Recommended component breakdown. behavioral_availability is NOT a component — it is a multiplier applied AFTER summing the five components below.",
+
+    "components": {
+      "production_evidence_score": {
+        "weight": 0.3,
+        "source": "career_history[].description mining using production_evidence_keyword_taxonomy",
+        "_note": "This is the highest single weight component because it is the hardest to fake and most predictive per JD."
+      },
+      "required_skill_match": {
+        "weight": 0.22,
+        "source": "Weighted match of 4 required skills against skills[] array AND career_history description keywords",
+        "_note": "Do not double-count: if 'NDCG' appears in both skills[] and description, count it once. Max weight is skills[] proficiency + endorsements + duration_months. Description match gives partial credit."
+      },
+      "career_trajectory_quality": {
+        "weight": 0.22,
+        "source": "company_tiers.yaml tier weights * fraction of career at product companies; ownership-verb evidence; DQ5 check result; title progression pattern",
+        "_note": "This component penalizes DQ4/DQ5 candidates via multiplier, not by zeroing them."
+      },
+      "preferred_skill_match": {
+        "weight": 0.12,
+        "source": "Top 3 matching preferred skills only (diminishing returns beyond 3)",
+        "_note": "Capped at 3 to prevent keyword stuffers with long skill lists from gaming this."
+      },
+      "experience_years_fit": {
+        "weight": 0.06,
+        "source": "experience.scoring_curve applied to profile.years_of_experience"
+      },
+      "location_and_availability_fit": {
+        "weight": 0.05,
+        "source": "location.scoring table + notice_period.scoring table, averaged"
+      },
+      "education_pedigree": {
+        "weight": 0.03,
+        "source": "education[].tier (tier_1 > tier_2 > tier_3 > tier_4) + field_of_study bonus for CS/Math/Statistics/EE",
+        "_note": "Lowest weight deliberately. Strong production evidence from a tier_3 institution > weak profile from a tier_1 institution."
+      }
+    },
+
+    "final_formula": "final_score = (sum_of_weighted_components) * availability_multiplier * engagement_multiplier",
+
+    "disqualifier_application": {
+      "order": "Compute final_score first, THEN apply DQ multipliers",
+      "DQ1": "final_score = 0.0 (hard reject, skip immediately)",
+      "DQ2_DQ3_DQ4_DQ5": "final_score = final_score * dq_multiplier",
+      "DQ6_DQ7": "final_score = final_score * dq_multiplier",
+      "multiple_DQs": "Multiply all triggered DQ multipliers together. Example: DQ3 (0.50) + DQ5 (0.45) = 0.50 * 0.45 = 0.225 effective multiplier."
+    },
+
+    "two_required_skill_floor": {
+      "rule": "IF candidate scores 0 on two or more required_skills, THEN cap final_score at 0.40 regardless of other components",
+      "_note": "Prevents a candidate with excellent trajectory but zero retrieval and zero evaluation experience from sneaking into top 100."
+    }
+  },
+
+  "ndcg_zone_strategy": {
+    "_meta": "Scoring metric weights: NDCG@10 = 0.50, NDCG@50 = 0.30, MAP = 0.15, P@10 = 0.05. Half the grade is your top 10 alone.",
+    "recommendations": {
+      "top_10_to_20": {
+        "treatment": "Distinct high-scrutiny zone — run additional evidence extraction passes, re-check all 7 DQs, verify honeypot checks, manually review reasonings for factual accuracy",
+        "_note": "Getting rank 1-10 right is worth 10x what getting rank 40-50 right is worth. Treat this zone as its own sub-problem."
+      },
+      "top_20_to_100": {
+        "treatment": "Standard pipeline output. Focus on correct DQ application and avoiding honeypots."
+      },
+      "top_100_cutoff": {
+        "treatment": "Ensure no honeypots, no hard-reject DQ1 candidates, scores are monotonically non-increasing."
+      }
+    }
+  },
+
+  "candidate_pool_intelligence": {
+    "_meta": "Dataset-derived facts that should directly inform your architecture decisions, not just context.",
+    "total_candidates": 100000,
+    "distribution": {
+      "tier_0_hard_eliminate_title": {
+        "approx_count": 70000,
+        "treatment": "Title sieve. O(N). Eliminates before ANY expensive computation."
+      },
+      "tier_1_generalist_tech": {
+        "approx_count": 26000,
+        "titles": [
+          "Software Engineer",
+          "Full Stack",
+          "Backend",
+          "Cloud",
+          "Java",
+          ".NET",
+          "DevOps",
+          "Mobile",
+          "Frontend",
+          "QA"
+        ],
+        "treatment": "Hidden gem territory. Career description mining is decisive here, NOT title matching.",
+        "_note": "This is where the JD warning about 'keyword trap' bites hardest. A generalist tech person who shipped a recommendation system > an AI Research Engineer who only published papers."
+      },
+      "tier_2_data_adjacent": {
+        "approx_count": 3700,
+        "titles": [
+          "Data Analyst",
+          "Analytics Engineer",
+          "Data Engineer",
+          "Senior Data Engineer"
+        ],
+        "treatment": "Prime hidden gem territory. Check for ML/retrieval work in descriptions carefully."
+      },
+      "tier_3_ml_ai_title": {
+        "approx_count": 900,
+        "treatment": "Direct pass with scrutiny. Apply all DQ checks. Do NOT reward title alone."
+      }
+    },
+    "fictional_employer_warning": {
+      "companies": [
+        "Pied Piper",
+        "Initech",
+        "Wayne Enterprises",
+        "Acme Corp",
+        "Stark Industries",
+        "Hooli",
+        "Globex Inc",
+        "Dunder Mifflin"
+      ],
+      "approx_mentions_each": 23500,
+      "treatment": "Correctly fall through to `unclassified` tier (neutral weight 0.75). DO NOT penalize. DO NOT attempt fuzzy matching to real companies.",
+      "_CRITICAL": "These are deliberate filler employers for the ~70K off-domain candidates. Their presence confirms company name is a WEAK signal for most of this pool."
+    },
+    "high_leverage_employers": {
+      "_note": "These are the single highest-signal employer matches for THIS specific JD. More relevant than FAANG (7-14 mentions each vs. 58-81 for these). From company_tiers.yaml ai_native section.",
+      "companies": [
+        "Krutrim (64 mentions)",
+        "Sarvam AI (67 mentions)",
+        "Genpact AI (81 mentions)",
+        "Glance (79 mentions)",
+        "Rephrase.ai (72 mentions)",
+        "Aganitha (69 mentions)",
+        "Niramai (69 mentions)",
+        "Saarthi.ai (68 mentions)",
+        "Mad Street Den (65 mentions)",
+        "Observe.AI (64 mentions)",
+        "Wysa (63 mentions)",
+        "Haptik (62 mentions)",
+        "Verloop.io (62 mentions)",
+        "Yellow.ai (59 mentions)",
+        "Locobuzz (58 mentions)"
+      ]
+    }
   }
 }
