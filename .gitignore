@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .claude
+
+candidates.jsonl
+job_description.txtcandidates.jsonl
+candidates.jsonl

@@ -31,6 +31,7 @@ class SkillMatcher:
 
         # 1. Required Skills
         for skill_name, config in self.required.items():
+            if skill_name.startswith('_'): continue
             matched = False
             # Check skills array
             if skill_name.lower() in skills_map:
@@ -42,17 +43,20 @@ class SkillMatcher:
                 duration = s_obj.get('duration_months', 0)
                 dur_mult = 1.0 if duration >= 24 else (0.6 if duration >= 6 else 0.3)
 
-                skill_scores[skill_name] = config['weight'] * mult * dur_mult
+                weight = config.get('weight', 1.0) if isinstance(config, dict) else 1.0
+                skill_scores[skill_name] = weight * mult * dur_mult
                 matched = True
 
             # Fallback: Description mining (partial credit)
             if not matched:
                 all_text = " ".join([j.get('description', '').lower() for j in candidate.get('career_history', [])]).lower()
-                if any(form.lower() in all_text for form in config.get('surface_forms_skills_array', [])):
-                    skill_scores[skill_name] = config['weight'] * 0.4 # 40% credit for mention without explicit skill object
+                if isinstance(config, dict) and any(form.lower() in all_text for form in config.get('surface_forms_skills_array', [])):
+                    weight = config.get('weight', 1.0)
+                    skill_scores[skill_name] = weight * 0.4 # 40% credit for mention without explicit skill object
                     matched = True
-                elif any(form.lower() in all_text for form in config.get('surface_forms_description_mining', [])):
-                    skill_scores[skill_name] = config['weight'] * 0.2 # 20% for semantic hint
+                elif isinstance(config, dict) and any(form.lower() in all_text for form in config.get('surface_forms_description_mining', [])):
+                    weight = config.get('weight', 1.0)
+                    skill_scores[skill_name] = weight * 0.2 # 20% for semantic hint
                     matched = True
 
             if matched:
@@ -61,23 +65,30 @@ class SkillMatcher:
         # 2. Preferred Skills (Top 3 only)
         preferred_scores = []
         for skill_name, config in self.preferred.items():
+            if skill_name.startswith('_'): continue
             if skill_name.lower() in skills_map:
                 s_obj = skills_map[skill_name.lower()]
                 prof = s_obj.get('proficiency', 'intermediate').lower()
                 mult = self.proficiency_map.get(prof, 0.5)
-                preferred_scores.append(config['weight'] * mult)
+                weight = config.get('weight', 0.4) if isinstance(config, dict) else 0.4
+                preferred_scores.append(weight * mult)
             else:
                 # Description mining for preferred
                 all_text = " ".join([j.get('description', '').lower() for j in candidate.get('career_history', [])]).lower()
-                if any(form.lower() in all_text for form in config.get('surface_forms', [])):
-                    preferred_scores.append(config['weight'] * 0.3)
+                surface_forms = config.get('surface_forms', []) if isinstance(config, dict) else []
+                if any(form.lower() in all_text for form in surface_forms):
+                    weight = config.get('weight', 0.4) if isinstance(config, dict) else 0.4
+                    preferred_scores.append(weight * 0.3)
 
         # Take only top 3 preferred skills to prevent bloat gaming
         top_preferred_sum = sum(sorted(preferred_scores, reverse=True)[:3])
 
         # Normalize total
-        total_weight = sum(self.required.values()) + sum(self.preferred.values()) # Simplified
-        # Wait, weights in spec are absolute. Let's just sum them.
+        # Extract weights from the config dictionaries
+        required_weights = [config.get('weight', 1.0) if isinstance(config, dict) else 1.0 for config in self.required.values()]
+        preferred_weights = [config.get('weight', 0.4) if isinstance(config, dict) else 0.4 for config in self.preferred.values()]
+
+        total_weight = sum(required_weights) + sum(preferred_weights)
 
         final_score = sum(skill_scores.values()) + top_preferred_sum
 
