@@ -5,7 +5,7 @@ class BehavioralEvaluator:
     """
     Evaluates candidate availability and engagement based on recruiter signals.
     """
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: Dict[str, Any] | None = None):
         # Configuration for decay thresholds and penalties
         self.config = config or {
             'decay_short': 30,

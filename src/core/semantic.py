@@ -70,6 +70,17 @@ class SemanticScorer:
         cand_norms[cand_norms == 0] = 1.0
         norm_cand_embeddings = candidate_embeddings / cand_norms
 
+        target_embedding = self.model.encode(
+            [jd_text],
+            convert_to_numpy=True
+        )[0]
+
+        candidate_embeddings = self.model.encode(
+            candidate_texts,
+            show_progress_bar=False,
+            convert_to_numpy=True
+        )
+
         target_norm = np.linalg.norm(target_embedding)
         if target_norm == 0: return np.zeros(len(candidates))
         norm_target = target_embedding / target_norm
