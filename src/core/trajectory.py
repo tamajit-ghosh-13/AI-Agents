@@ -1,4 +1,4 @@
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 from datetime import datetime
 import numpy as np
 from loguru import logger
@@ -8,42 +8,65 @@ class TrajectoryEvaluator:
         import json
         with open(spec_path, 'r') as f:
             self.spec = json.load(f)
-        self.exp_range = self.spec.get('experience_range', {'min': 5, 'max': 9})
+        self.exp_range = self.spec.get('experience', {}).get('stated_range_years', {'min': 5, 'max': 9})
 
-    def calculate_stability_score(self, history: list) -> Tuple[float, str]:
-        # \"\"\"
-        # Calculates stability and growth.
-        # Gap-aware: treats employment gaps as neutral.
-        # \"\"\"
+    def _validate_history(self, history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Ensures history is sorted by date and handles overlaps."""
+        sorted_history = sorted(
+            history,
+            key=lambda x: x.get('start_date', '1900-01-01'),
+            reverse=True
+        )
+        return sorted_history
+
+    def calculate_stability_score(self, history: List[Dict[str, Any]]) -> Tuple[float, str]:
+        """
+        Calculates stability and growth.
+        Gap-aware: treats employment gaps as neutral.
+        """
         if not history:
             return 1.0, "No history"
 
+        history = self._validate_history(history)
         tenures = [job.get('duration_months', 0) for job in history]
-        avg_tenure = np.mean(tenures) if tenures else 0
 
         # Stability Score: penalize high frequency of short stints (< 18 months)
         short_stints = sum(1 for t in tenures if t < 18)
         stability_penalty = (short_stints / len(history)) * 0.3
 
-        # Growth Signal: Check if titles evolve
-        titles = [job.get('title', '').lower() for job in history]
+        # Growth Signal: Check for title evolution (Junior -> Senior -> Lead)
+        hierarchy = ["junior", "associate", "sde", "software engineer", "senior", "staff", "principal", "lead", "architect"]
         growth_signal = 0.0
-        senior_keywords = {'senior', 'lead', 'staff', 'principal', 'head', 'architect'}
-        if any(any(kw in t for kw in senior_keywords) for t in titles):
-            growth_signal = 0.2
 
+        # Check if candidate has moved UP the hierarchy over time
+        last_rank = -1
+        for job in reversed(history): # Oldest to newest
+            title = job.get('title', '').lower()
+            current_rank = -1
+            for i, h_title in enumerate(hierarchy):
+                if h_title in title:
+                    current_rank = i
+                    break
+
+            if current_rank > last_rank:
+                growth_signal += 0.05
+                last_rank = current_rank
+
+        growth_signal = min(growth_signal, 0.2)
         score = 1.0 - stability_penalty + growth_signal
-        return float(np.clip(score, 0.5, 1.5)), "Stability and growth analyzed"
+
+        # Normalize to [0.5, 1.2]
+        return float(np.clip(score, 0.5, 1.2)), "Stability and growth analyzed"
 
     def evaluate_experience_fit(self, candidate: Dict[str, Any]) -> Tuple[float, str]:
-        # \"\"\"
-        # Handles Entry-level, Ideal-range, and Overqualified candidates.
-        # \"\"\"
+        """
+        Handles Entry-level, Ideal-range, and Overqualified candidates.
+        """
         exp = candidate.get('profile', {}).get('years_of_experience', 0)
         min_exp = self.exp_range['min']
         max_exp = self.exp_range['max']
 
-        # Path B: Entry Level (Potential-based)
+        # Path B: Entry Level
         if exp < 2:
             return 0.8, "Entry-level path: Potential-based evaluation"
 
@@ -61,4 +84,6 @@ class TrajectoryEvaluator:
         history = candidate.get('career_history', [])
         stability, _ = self.calculate_stability_score(history)
         fit, _ = self.evaluate_experience_fit(candidate)
-        return stability * fit
+
+        # Use a bounded product: (Stability * Fit) / 1.2 to keep it around 1.0
+        return (stability * fit) / 1.2
