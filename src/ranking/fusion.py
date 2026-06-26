@@ -43,20 +43,18 @@ class RankFusion:
         total_weight = 0.0
 
         # Mapping agent names to their relative weights in the scoring policy
-        # In a real system, these would be explicitly mapped in RoleIntent
         weight_map = {
-            "TechnicalDepthAgent": self.policy.relevance_weight,
-            "SeniorityAgent": self.policy.career_archetype_weight,
-            "ProductContextAgent": 0.1, # Default
-            "TrajectoryAgent": 0.1,     # Default
-            "EvidenceAgent": 0.1,       # Default
+            "TechnicalDepthAgent": self.policy.relevance_weight,     # 0.40
+            "TrajectoryAgent": self.policy.career_archetype_weight,  # 0.10
+            "ProductContextAgent": 0.1,
+            "EvidenceAgent": 0.1,
         }
 
         for agent_name, verdict in verdicts.items():
-            weight = weight_map.get(agent_name, 0.1)
-            # Use the normalized score provided by the agent
-            total_weighted_score += verdict.score * weight
-            total_weight += weight
+            if agent_name in weight_map:
+                weight = weight_map[agent_name]
+                total_weighted_score += verdict.score * weight
+                total_weight += weight
 
         if total_weight == 0:
             return 0.0

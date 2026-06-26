@@ -144,16 +144,25 @@ class RankingPipeline:
         evaluations.sort(key=lambda x: (-x.final_score, x.candidate_id))
 
         # Convert dataclasses to dicts for return
-        return [
-            {
+        # Build result dicts with calculation details
+        results = []
+        for e in evaluations:
+            # Construct calculation description from component scores
+            component_scores = []
+            for name, verdict in e.verdicts.items():
+                # Skip sieve if not a score
+                if hasattr(verdict, 'score'):
+                    component_scores.append(f"{name}:{verdict.score:.2f}")
+            calculation = ", ".join(component_scores)
+            results.append({
                 "candidate_id": e.candidate_id,
                 "final_score": e.final_score,
                 "tier": e.tier,
                 "trust_score": e.trust_score,
+                "calculation": calculation,
                 "justification": e.justification,
                 "key_risks": e.key_risks,
                 "verdicts": {k: v.__dict__ for k, v in e.verdicts.items()},
                 "candidate_data": next(c for c in candidates if c.get('candidate_id') == e.candidate_id)
-            }
-            for e in evaluations
-        ]
+            })
+        return results

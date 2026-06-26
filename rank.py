@@ -42,9 +42,13 @@ def main():
     # 3. Execute Ranking
     results = pipeline.run(candidates, jd_text)
 
-    # 4. Synthesize Reasoning
-    for res in results:
+    # 4. Synthesize Reasoning for Top 100
+    for res in results[:100]:
         res['reasoning'] = synthesizer.synthesize(res)
+
+    # Ensure we have reasoning for the audit if it needs it,
+    # but auditor usually checks for honeypots/integrity.
+    # Since the output CSV only takes top 100, we only synthesize top 100.
 
     # 5. Audit Results
     if not auditor.audit(results):
@@ -56,9 +60,9 @@ def main():
     # 6. Write to CSV
     with open(args.output, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(["candidate_id", "final_score", "reasoning"])
+        writer.writerow(["candidate_id", "final_score", "trust_score", "calculation", "reasoning"])
         for res in results[:100]: # Top 100 only for submission
-            writer.writerow([res['candidate_id'], f"{res['final_score']:.4f}", res['reasoning']])
+            writer.writerow([res['candidate_id'], f"{res['final_score']:.4f}", res.get('trust_score', ''), res.get('calculation', ''), res['reasoning']])
 
     logger.info(f"Successfully ranked candidates. Results saved to {args.output}")
 

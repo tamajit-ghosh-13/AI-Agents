@@ -39,14 +39,21 @@ class SkillMatcher:
         for skill_name, config in self.required.items():
             if skill_name.startswith('_'): continue
             matched = False
-            # Check skills array
-            if skill_name.lower() in skills_map:
-                s_obj = skills_map[skill_name.lower()]
-                prof = s_obj.get('proficiency', 'intermediate').lower()
+            matched_s_obj = None
+
+            # Look up by surface forms in candidate's skills array
+            if isinstance(config, dict):
+                for form in config.get('surface_forms_skills_array', []):
+                    if form.lower() in skills_map:
+                        matched_s_obj = skills_map[form.lower()]
+                        break
+
+            if matched_s_obj:
+                prof = matched_s_obj.get('proficiency', 'intermediate').lower()
                 mult = self.proficiency_map.get(prof, 0.5)
 
                 # Duration bonus: > 2 years = full credit, < 1 year = partial
-                duration = s_obj.get('duration_months', 0)
+                duration = matched_s_obj.get('duration_months', 0)
                 dur_mult = 1.0 if duration >= 24 else (0.6 if duration >= 6 else 0.3)
 
                 weight = config.get('weight', 1.0) if isinstance(config, dict) else 1.0
@@ -72,16 +79,24 @@ class SkillMatcher:
         preferred_scores = []
         for skill_name, config in self.preferred.items():
             if skill_name.startswith('_'): continue
-            if skill_name.lower() in skills_map:
-                s_obj = skills_map[skill_name.lower()]
-                prof = s_obj.get('proficiency', 'intermediate').lower()
+            
+            matched_s_obj = None
+            surface_forms = config.get('surface_forms', []) if isinstance(config, dict) else []
+
+            # Look up by surface forms in candidate's skills array
+            for form in surface_forms:
+                if form.lower() in skills_map:
+                    matched_s_obj = skills_map[form.lower()]
+                    break
+
+            if matched_s_obj:
+                prof = matched_s_obj.get('proficiency', 'intermediate').lower()
                 mult = self.proficiency_map.get(prof, 0.5)
                 weight = config.get('weight', 0.4) if isinstance(config, dict) else 0.4
                 preferred_scores.append(weight * mult)
             else:
                 # Description mining for preferred
                 all_text = " ".join([j.get('description', '').lower() for j in candidate.get('career_history', [])]).lower()
-                surface_forms = config.get('surface_forms', []) if isinstance(config, dict) else []
                 if any(form.lower() in all_text for form in surface_forms):
                     weight = config.get('weight', 0.4) if isinstance(config, dict) else 0.4
                     preferred_scores.append(weight * 0.3)
