@@ -2,15 +2,15 @@ from typing import List, Dict, Any, Tuple
 import numpy as np
 from loguru import logger
 
-from src.core.title_sieve import TitleSieve
-from src.core.integrity import IntegrityGuard
-from src.core.semantic import SemanticScorer
-from src.core.trajectory import TrajectoryEvaluator
-from src.core.behavioral import BehavioralEvaluator
-from src.core.evidence import EvidenceExtractor
-from src.core.skills import SkillMatcher
-from src.core.company_matcher import CompanyMatcher
-from src.core.disqualifiers import DisqualifierEngine
+from src.reasoning.title_sieve import TitleSieve
+from src.inspection.integrity import IntegrityGuard
+from src.retrieval.semantic import SemanticScorer
+from src.reasoning.trajectory import TrajectoryEvaluator
+from src.reasoning.behavioral import BehavioralEvaluator
+from src.reasoning.evidence import EvidenceExtractor
+from src.reasoning.technical_depth import SkillMatcher
+from src.reasoning.product_context import CompanyMatcher
+from src.ranking.disqualifiers import DisqualifierEngine
 
 class RankingPipeline:
     def __init__(self, spec_path: str, tiers_path: str):
@@ -136,5 +136,17 @@ class RankingPipeline:
 
         # Final Sorting: Score DESC, candidate_id ASC (Deterministic)
         results.sort(key=lambda x: (-x['final_score'], x['candidate_id']))
+
+        # Assign Relative Confidence Tiers based on rank
+        # Top 10% -> Strong Fit, Next 30% -> Possible Fit, Others -> Insufficient Data
+        num_results = len(results)
+        for i, res in enumerate(results):
+            rank_percentile = i / num_results if num_results > 0 else 1.0
+            if rank_percentile <= 0.10:
+                res['confidence_tier'] = "Strong Fit"
+            elif rank_percentile <= 0.40:
+                res['confidence_tier'] = "Possible Fit"
+            else:
+                res['confidence_tier'] = "Insufficient Data"
 
         return results

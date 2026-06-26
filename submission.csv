@@ -1,101 +1,101 @@
 candidate_id,final_score,reasoning
-CAND_0040887,0.9617,[Possible Fit] 4.7y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0036184,0.9511,[Possible Fit] 6.0y exp.  Limited production evidence.
-CAND_0081846,0.9232,"[Possible Fit] 6.7y exp.  Key evidence: Metric: re-ranker (60%), Metric: evaluation framework (60%), owned the"
-CAND_0055905,0.9085,"[Possible Fit] 8.1y exp.  Key evidence: re-ranker, evaluation framework, owned the"
-CAND_0018499,0.8976,"[Possible Fit] 7.2y exp.  Key evidence: re-ranker, evaluation framework"
-CAND_0046064,0.8921,"[Possible Fit] 8.9y exp.  Key evidence: re-ranker, evaluation framework, owned the"
-CAND_0011687,0.8640,[Possible Fit] 7.8y exp.  Key evidence: owned the
-CAND_0046525,0.8538,"[Possible Fit] 6.1y exp.  Key evidence: re-ranker, evaluation framework, embedding-based search"
-CAND_0077337,0.8216,"[Possible Fit] 7.0y exp.  Key evidence: owned the, embedding-based search"
-CAND_0079387,0.8091,[Possible Fit] 6.9y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0002025,0.7965,[Insufficient Data] 5.9y exp.  Limited production evidence.
-CAND_0080766,0.7865,"[Insufficient Data] 8.8y exp.  Key evidence: Metric: in production (60%), Metric: evaluation framework (60%), owned the"
-CAND_0061257,0.7616,"[Insufficient Data] 8.0y exp.  Key evidence: in production, evaluation framework, owned the"
-CAND_0050454,0.7455,[Insufficient Data] 6.8y exp.  Key evidence: owned the
-CAND_0093912,0.7450,[Insufficient Data] 5.3y exp.  Key evidence: owned the
-CAND_0068351,0.7416,"[Insufficient Data] 6.4y exp.  Key evidence: in production, evaluation framework, owned the"
-CAND_0086022,0.7265,"[Insufficient Data] 5.3y exp.  Key evidence: Metric: re-ranker (24%), Metric: evaluation framework (24%), embedding-based search"
-CAND_0053591,0.7117,"[Insufficient Data] 5.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0064326,0.7101,"[Insufficient Data] 7.6y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0030031,0.7056,[Insufficient Data] 5.7y exp.  Key evidence: owned the
-CAND_0052682,0.7048,[Insufficient Data] 6.6y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0042506,0.6886,[Insufficient Data] 4.2y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0062247,0.6855,[Insufficient Data] 7.3y exp.  Key evidence: owned the
-CAND_0065195,0.6819,[Insufficient Data] 5.1y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0075439,0.6794,[Insufficient Data] 4.3y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0052328,0.6728,[Insufficient Data] 6.5y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0068811,0.6705,"[Insufficient Data] 8.0y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0043228,0.6622,[Insufficient Data] 6.8y exp.  Key evidence: owned the
-CAND_0081852,0.6546,[Insufficient Data] 5.9y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0027691,0.6538,[Insufficient Data] 6.5y exp.  Key evidence: owned the
-CAND_0037566,0.6496,[Insufficient Data] 6.9y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0020708,0.6329,[Insufficient Data] 4.2y exp.  Limited production evidence.
-CAND_0041610,0.6260,"[Insufficient Data] 6.7y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0071974,0.6255,[Insufficient Data] 7.8y exp.  Key evidence: owned the
-CAND_0057563,0.6087,[Insufficient Data] 6.8y exp.  Key evidence: owned the
-CAND_0054394,0.6080,[Insufficient Data] 4.1y exp.  Key evidence: owned the
-CAND_0017960,0.6050,"[Insufficient Data] 7.7y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0044222,0.5961,[Insufficient Data] 7.7y exp.  Key evidence: owned the
-CAND_0061655,0.5890,[Insufficient Data] 4.6y exp.  Key evidence: owned the
-CAND_0044855,0.5838,[Insufficient Data] 6.6y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0098846,0.5836,"[Insufficient Data] 7.6y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0039521,0.5833,"[Insufficient Data] 3.0y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0075574,0.5733,"[Insufficient Data] 5.7y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0081686,0.5727,[Insufficient Data] 6.0y exp.  Key evidence: owned the
-CAND_0052335,0.5709,"[Insufficient Data] 6.4y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0051004,0.5670,[Insufficient Data] 4.7y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0030953,0.5589,"[Insufficient Data] 7.8y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0051292,0.5532,"[Insufficient Data] 5.2y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0053695,0.5514,[Insufficient Data] 5.8y exp.  Key evidence: owned the
-CAND_0077285,0.5506,"[Insufficient Data] 5.5y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0042029,0.5441,"[Insufficient Data] 6.5y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0054123,0.5407,[Insufficient Data] 4.7y exp.  Limited production evidence.
-CAND_0075249,0.5331,[Insufficient Data] 6.2y exp.  Limited production evidence.
-CAND_0079284,0.5296,[Insufficient Data] 4.9y exp.  Key evidence: owned the
-CAND_0041669,0.5122,"[Insufficient Data] 8.0y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0020877,0.5070,[Insufficient Data] 5.1y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0096172,0.4999,[Insufficient Data] 5.2y exp.  Limited production evidence.
-CAND_0076251,0.4942,[Insufficient Data] 7.6y exp.  Limited production evidence.
-CAND_0006567,0.4921,[Insufficient Data] 7.9y exp.  Key evidence: owned the
-CAND_0030468,0.4897,[Insufficient Data] 5.4y exp.  Limited production evidence.
-CAND_0033445,0.4897,[Insufficient Data] 6.8y exp.  Limited production evidence.
-CAND_0078002,0.4861,[Insufficient Data] 6.3y exp.  Key evidence: owned the
-CAND_0060054,0.4843,[Insufficient Data] 6.4y exp.  Key evidence: owned the
-CAND_0064888,0.4804,[Insufficient Data] 5.8y exp.  Limited production evidence.
-CAND_0066690,0.4735,[Insufficient Data] 4.8y exp.  Limited production evidence.
-CAND_0010685,0.4718,[Insufficient Data] 6.7y exp.  Key evidence: owned the
-CAND_0026942,0.4709,[Insufficient Data] 6.0y exp.  Limited production evidence.
-CAND_0068932,0.4701,[Insufficient Data] 5.2y exp.  Key evidence: ranking system
-CAND_0043860,0.4667,[Insufficient Data] 6.1y exp.  Key evidence: ranking system
-CAND_0031842,0.4656,[Insufficient Data] 3.5y exp.  Key evidence: ranking system
-CAND_0080534,0.4621,[Insufficient Data] 3.8y exp.  Key evidence: ranking system
-CAND_0048558,0.4578,[Insufficient Data] 6.7y exp.  Key evidence: ranking system
-CAND_0030348,0.4495,[Insufficient Data] 4.5y exp.  Limited production evidence.
-CAND_0074225,0.4469,"[Insufficient Data] 4.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0036863,0.4467,"[Insufficient Data] 4.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0050553,0.4398,[Insufficient Data] 3.6y exp.  Limited production evidence.
-CAND_0005632,0.4369,[Insufficient Data] 5.6y exp.  Key evidence: owned the
-CAND_0058688,0.4362,[Insufficient Data] 6.7y exp.  Limited production evidence.
-CAND_0064256,0.4348,[Insufficient Data] 6.4y exp.  Limited production evidence.
-CAND_0040117,0.4325,[Insufficient Data] 6.5y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0007009,0.4310,[Insufficient Data] 7.9y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0053605,0.4237,[Insufficient Data] 6.9y exp.  Key evidence: ranking system
-CAND_0088025,0.4197,"[Insufficient Data] 8.6y exp.  Key evidence: owned the, embedding-based search"
-CAND_0015528,0.4145,[Insufficient Data] 7.4y exp.  Limited production evidence.
-CAND_0017178,0.4139,[Insufficient Data] 4.2y exp.  Key evidence: ranking system
-CAND_0084819,0.4043,"[Insufficient Data] 4.5y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0036676,0.4037,[Insufficient Data] 6.6y exp.  Key evidence: owned the
-CAND_0044883,0.4006,"[Insufficient Data] 6.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0030034,0.4005,[Insufficient Data] 4.2y exp.  Key evidence: owned the
-CAND_0046132,0.3983,[Insufficient Data] 4.3y exp.  Key evidence: ranking system
-CAND_0043637,0.3976,[Insufficient Data] 5.5y exp.  Limited production evidence.
-CAND_0070525,0.3972,[Insufficient Data] 5.4y exp.  Key evidence: ranking system
-CAND_0011432,0.3943,"[Insufficient Data] 7.6y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0079064,0.3936,[Insufficient Data] 5.2y exp.  Key evidence: Metric: evaluation framework (31%)
-CAND_0044213,0.3922,[Insufficient Data] 3.7y exp.  Limited production evidence.
-CAND_0037944,0.3914,"[Insufficient Data] 4.9y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
-CAND_0078042,0.3913,[Insufficient Data] 4.7y exp.  Key evidence: owned the
-CAND_0079550,0.3910,[Insufficient Data] 3.9y exp.  Limited production evidence.
-CAND_0018549,0.3905,[Insufficient Data] 6.8y exp.  Key evidence: owned the
-CAND_0019845,0.3900,[Insufficient Data] 3.4y exp.  Key evidence: ranking system
+CAND_0040887,0.9617,[Strong Fit] 4.7y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0036184,0.9511,[Strong Fit] 6.0y exp.  Limited production evidence.
+CAND_0081846,0.9195,"[Strong Fit] 6.7y exp.  Key evidence: Metric: re-ranker (60%), Metric: evaluation framework (60%), owned the"
+CAND_0055905,0.9050,"[Strong Fit] 8.1y exp.  Key evidence: re-ranker, evaluation framework, owned the"
+CAND_0018499,0.8941,"[Strong Fit] 7.2y exp.  Key evidence: re-ranker, evaluation framework"
+CAND_0046064,0.8884,"[Strong Fit] 8.9y exp.  Key evidence: re-ranker, evaluation framework, owned the"
+CAND_0011687,0.8607,[Strong Fit] 7.8y exp.  Key evidence: owned the
+CAND_0077337,0.8216,"[Strong Fit] 7.0y exp.  Key evidence: owned the, embedding-based search"
+CAND_0079387,0.8057,[Strong Fit] 6.9y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0002025,0.7965,[Strong Fit] 5.9y exp.  Limited production evidence.
+CAND_0080766,0.7830,"[Strong Fit] 8.8y exp.  Key evidence: Metric: in production (60%), Metric: evaluation framework (60%), owned the"
+CAND_0046525,0.7656,"[Strong Fit] 6.1y exp.  Key evidence: re-ranker, evaluation framework, embedding-based search"
+CAND_0061257,0.7583,"[Strong Fit] 8.0y exp.  Key evidence: in production, evaluation framework, owned the"
+CAND_0050454,0.7424,[Strong Fit] 6.8y exp.  Key evidence: owned the
+CAND_0093912,0.7421,[Strong Fit] 5.3y exp.  Key evidence: owned the
+CAND_0068351,0.7384,"[Strong Fit] 6.4y exp.  Key evidence: in production, evaluation framework, owned the"
+CAND_0086022,0.7234,"[Strong Fit] 5.3y exp.  Key evidence: Metric: re-ranker (24%), Metric: evaluation framework (24%), embedding-based search"
+CAND_0053591,0.7090,"[Strong Fit] 5.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0064326,0.7075,"[Strong Fit] 7.6y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0030031,0.7030,[Strong Fit] 5.7y exp.  Key evidence: owned the
+CAND_0052682,0.7015,[Strong Fit] 6.6y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0042506,0.6861,[Strong Fit] 4.2y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0062247,0.6826,[Strong Fit] 7.3y exp.  Key evidence: owned the
+CAND_0065195,0.6819,[Strong Fit] 5.1y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0075439,0.6768,[Strong Fit] 4.3y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0052328,0.6697,[Strong Fit] 6.5y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0068811,0.6680,"[Strong Fit] 8.0y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0043228,0.6598,[Strong Fit] 6.8y exp.  Key evidence: owned the
+CAND_0027691,0.6508,[Strong Fit] 6.5y exp.  Key evidence: owned the
+CAND_0037566,0.6469,[Strong Fit] 6.9y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0020708,0.6299,[Strong Fit] 4.2y exp.  Limited production evidence.
+CAND_0041610,0.6236,"[Strong Fit] 6.7y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0071974,0.6228,[Strong Fit] 7.8y exp.  Key evidence: owned the
+CAND_0057563,0.6062,[Strong Fit] 6.8y exp.  Key evidence: owned the
+CAND_0054394,0.6056,[Strong Fit] 4.1y exp.  Key evidence: owned the
+CAND_0017960,0.6025,"[Strong Fit] 7.7y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0044222,0.5938,[Strong Fit] 7.7y exp.  Key evidence: owned the
+CAND_0081852,0.5869,[Strong Fit] 5.9y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0061655,0.5868,[Strong Fit] 4.6y exp.  Key evidence: owned the
+CAND_0044855,0.5813,[Strong Fit] 6.6y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0098846,0.5812,"[Strong Fit] 7.6y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0039521,0.5808,"[Strong Fit] 3.0y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0075574,0.5712,"[Strong Fit] 5.7y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0081686,0.5704,[Strong Fit] 6.0y exp.  Key evidence: owned the
+CAND_0052335,0.5684,"[Strong Fit] 6.4y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0051004,0.5647,[Strong Fit] 4.7y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0030953,0.5564,"[Strong Fit] 7.8y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0051292,0.5508,"[Strong Fit] 5.2y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0053695,0.5489,[Strong Fit] 5.8y exp.  Key evidence: owned the
+CAND_0077285,0.5484,"[Strong Fit] 5.5y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0042029,0.5418,"[Strong Fit] 6.5y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0054123,0.5385,[Strong Fit] 4.7y exp.  Limited production evidence.
+CAND_0075249,0.5307,[Strong Fit] 6.2y exp.  Limited production evidence.
+CAND_0079284,0.5272,[Strong Fit] 4.9y exp.  Key evidence: owned the
+CAND_0041669,0.5099,"[Strong Fit] 8.0y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0020877,0.5047,[Strong Fit] 5.1y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0096172,0.4979,[Strong Fit] 5.2y exp.  Limited production evidence.
+CAND_0076251,0.4921,[Strong Fit] 7.6y exp.  Limited production evidence.
+CAND_0006567,0.4901,[Strong Fit] 7.9y exp.  Key evidence: owned the
+CAND_0033445,0.4897,[Strong Fit] 6.8y exp.  Limited production evidence.
+CAND_0030468,0.4878,[Strong Fit] 5.4y exp.  Limited production evidence.
+CAND_0060054,0.4843,[Strong Fit] 6.4y exp.  Key evidence: owned the
+CAND_0078002,0.4841,[Strong Fit] 6.3y exp.  Key evidence: owned the
+CAND_0064888,0.4804,[Strong Fit] 5.8y exp.  Limited production evidence.
+CAND_0066690,0.4735,[Strong Fit] 4.8y exp.  Limited production evidence.
+CAND_0010685,0.4718,[Strong Fit] 6.7y exp.  Key evidence: owned the
+CAND_0026942,0.4709,[Strong Fit] 6.0y exp.  Limited production evidence.
+CAND_0068932,0.4701,[Strong Fit] 5.2y exp.  Key evidence: ranking system
+CAND_0043860,0.4667,[Strong Fit] 6.1y exp.  Key evidence: ranking system
+CAND_0031842,0.4656,[Strong Fit] 3.5y exp.  Key evidence: ranking system
+CAND_0080534,0.4621,[Strong Fit] 3.8y exp.  Key evidence: ranking system
+CAND_0048558,0.4578,[Strong Fit] 6.7y exp.  Key evidence: ranking system
+CAND_0030348,0.4474,[Strong Fit] 4.5y exp.  Limited production evidence.
+CAND_0074225,0.4452,"[Strong Fit] 4.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0036863,0.4447,"[Strong Fit] 4.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0050553,0.4398,[Strong Fit] 3.6y exp.  Limited production evidence.
+CAND_0005632,0.4369,[Strong Fit] 5.6y exp.  Key evidence: owned the
+CAND_0058688,0.4341,[Strong Fit] 6.7y exp.  Limited production evidence.
+CAND_0064256,0.4332,[Strong Fit] 6.4y exp.  Limited production evidence.
+CAND_0040117,0.4325,[Strong Fit] 6.5y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0007009,0.4310,[Strong Fit] 7.9y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0053605,0.4221,[Strong Fit] 6.9y exp.  Key evidence: ranking system
+CAND_0088025,0.4180,"[Strong Fit] 8.6y exp.  Key evidence: owned the, embedding-based search"
+CAND_0017178,0.4139,[Strong Fit] 4.2y exp.  Key evidence: ranking system
+CAND_0015528,0.4127,[Strong Fit] 7.4y exp.  Limited production evidence.
+CAND_0084819,0.4028,"[Strong Fit] 4.5y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0036676,0.4018,[Strong Fit] 6.6y exp.  Key evidence: owned the
+CAND_0044883,0.3990,"[Strong Fit] 6.3y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0030034,0.3984,[Strong Fit] 4.2y exp.  Key evidence: owned the
+CAND_0046132,0.3983,[Strong Fit] 4.3y exp.  Key evidence: ranking system
+CAND_0043637,0.3976,[Strong Fit] 5.5y exp.  Limited production evidence.
+CAND_0070525,0.3972,[Strong Fit] 5.4y exp.  Key evidence: ranking system
+CAND_0011432,0.3943,"[Strong Fit] 7.6y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0044213,0.3922,[Strong Fit] 3.7y exp.  Limited production evidence.
+CAND_0079064,0.3919,[Strong Fit] 5.2y exp.  Key evidence: Metric: evaluation framework (31%)
+CAND_0037944,0.3914,"[Strong Fit] 4.9y exp.  Key evidence: Metric: evaluation framework (31%), owned the"
+CAND_0079550,0.3910,[Strong Fit] 3.9y exp.  Limited production evidence.
+CAND_0078042,0.3896,[Strong Fit] 4.7y exp.  Key evidence: owned the
+CAND_0018549,0.3890,[Strong Fit] 6.8y exp.  Key evidence: owned the
+CAND_0019845,0.3886,[Strong Fit] 3.4y exp.  Key evidence: ranking system

@@ -14,16 +14,11 @@ class ReasonSynthesizer:
         evidence = result['evidence']
         dq_reasons = result['dq_reasons']
 
+        # Use the relative confidence tier assigned in the pipeline
+        tier = result.get('confidence_tier', "Insufficient Data")
+
         if score == 0:
             return f"Rejected: {', '.join(dq_reasons) if dq_reasons else 'Does not meet basic requirements'}."
-
-        # Confidence Tiering
-        if score >= 1.2:
-            tier = "Strong Fit"
-        elif score >= 0.8:
-            tier = "Possible Fit"
-        else:
-            tier = "Insufficient Data"
 
         # Evidence snippet
         evidence_str = f" Key evidence: {', '.join(evidence[:3])}" if evidence else " Limited production evidence."
