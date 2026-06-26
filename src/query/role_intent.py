@@ -46,6 +46,7 @@ class Signal:
     tech_examples: List[str] = field(default_factory=list)
     metrics: List[str] = field(default_factory=list)
     examples: List[str] = field(default_factory=list)
+    models_mentioned_examples: List[str] = field(default_factory=list)
 
 @dataclass
 class Disqualifier:

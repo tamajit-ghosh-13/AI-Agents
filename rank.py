@@ -2,7 +2,7 @@ import argparse
 import json
 import csv
 from loguru import logger
-from src.pipeline import RankingPipeline
+from src.orchestration.pipeline import RankingPipeline
 from src.synthesis import ReasonSynthesizer
 from src.auditor import SubmissionAuditor
 

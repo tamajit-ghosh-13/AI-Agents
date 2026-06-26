@@ -11,11 +11,15 @@ class ReasonSynthesizer:
         """
         cand = result['candidate_data']
         score = result['final_score']
-        evidence = result['evidence']
-        dq_reasons = result['dq_reasons']
+
+        # Get evidence from the EvidenceAgent verdict
+        evidence_objs = result.get('verdicts', {}).get('EvidenceAgent', {}).get('evidence', [])
+        evidence = [e.text if hasattr(e, 'text') else e.get('text', 'Unknown') for e in evidence_objs]
+
+        dq_reasons = result.get('key_risks', [])
 
         # Use the relative confidence tier assigned in the pipeline
-        tier = result.get('confidence_tier', "Insufficient Data")
+        tier = result.get('tier', "Insufficient Data")
 
         if score == 0:
             return f"Rejected: {', '.join(dq_reasons) if dq_reasons else 'Does not meet basic requirements'}."

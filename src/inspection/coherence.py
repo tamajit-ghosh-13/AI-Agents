@@ -45,12 +45,14 @@ class CoherenceEngine:
                 logger.debug(f"Timeline analysis failed for {candidate.get('candidate_id')}: {e}")
 
         # 3. Skill-Experience Consistency
-        skills = candidate.get('skills', {})
+        skills = candidate.get('skills', [])
         # Check if "Senior" claims are backed by years of experience
         total_years = self._calculate_total_years(history)
-        for skill, level in skills.items():
-            if level == "expert" and total_years < 2:
-                anomalies.append(Anomaly("Skill-Experience Gap", "high", f"Claimed expert level in {skill} but total experience is < 2 years."))
+        for skill_obj in skills:
+            skill = skill_obj.get('name', '')
+            level = skill_obj.get('proficiency', '')
+            if (level == "expert" or level == "advanced") and total_years < 2:
+                anomalies.append(Anomaly("Skill-Experience Gap", "high", f"Claimed expert/advanced level in {skill} but total experience is < 2 years."))
 
         # 4. Seniority Trajectory Plausibility
         # e.g., Junior -> Director in 1 year
