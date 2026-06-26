@@ -21,6 +21,7 @@ class CandidateEvaluation:
     candidate_id: str
     verdicts: Dict[str, Verdict] = field(default_factory=dict)
     trust_score: float = 1.0
+    calculation: str = ""
     availability_score: float = 1.0
     risk_score: float = 0.0
     final_score: float = 0.0

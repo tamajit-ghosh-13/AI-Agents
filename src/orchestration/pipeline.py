@@ -5,7 +5,7 @@ from loguru import logger
 from src.query.role_intent import JDParser
 from src.reasoning.title_sieve import TitleSieve
 from src.inspection.integrity import IntegrityGuard
-from src.inspection.coherence import CoherenceEngine
+from src.inspection.trust_engine import TrustEngine
 from src.retrieval.semantic import SemanticScorer
 from src.reasoning.trajectory import TrajectoryEvaluator
 from src.reasoning.behavioral import BehavioralEvaluator
@@ -29,7 +29,7 @@ class RankingPipeline:
         # Initialize all modules
         self.sieve = TitleSieve(spec_path)
         self.integrity = IntegrityGuard(tiers_path)
-        self.coherence = CoherenceEngine()
+        self.trust_engine = TrustEngine()
         self.semantic = SemanticScorer(spec_path)
         self.trajectory = TrajectoryEvaluator(spec_path)
         self.behavioral = BehavioralEvaluator()
@@ -62,14 +62,15 @@ class RankingPipeline:
                 logger.debug(f"Honeypot detected for {cand_id}: {hp_reason}")
                 continue
 
-            # 2. Coherence Check
-            trust_score, anomalies = self.coherence.analyze(cand)
+            # 2. Trust & Coherence Check
+            trust_score, calculation, anomalies = self.trust_engine.analyze(cand)
 
             # Initialize Evaluation Object
             eval_obj = CandidateEvaluation(
                 candidate_id=cand_id,
                 trust_score=trust_score,
-                key_risks=[a.description for a in anomalies]
+                calculation=calculation,
+                key_risks=[a for a in anomalies]
             )
 
             # --- Stage O: Orchestrate (Reasoning) ---
@@ -144,22 +145,14 @@ class RankingPipeline:
         evaluations.sort(key=lambda x: (-x.final_score, x.candidate_id))
 
         # Convert dataclasses to dicts for return
-        # Build result dicts with calculation details
         results = []
         for e in evaluations:
-            # Construct calculation description from component scores
-            component_scores = []
-            for name, verdict in e.verdicts.items():
-                # Skip sieve if not a score
-                if hasattr(verdict, 'score'):
-                    component_scores.append(f"{name}:{verdict.score:.2f}")
-            calculation = ", ".join(component_scores)
             results.append({
                 "candidate_id": e.candidate_id,
                 "final_score": e.final_score,
                 "tier": e.tier,
                 "trust_score": e.trust_score,
-                "calculation": calculation,
+                "calculation": e.calculation,
                 "justification": e.justification,
                 "key_risks": e.key_risks,
                 "verdicts": {k: v.__dict__ for k, v in e.verdicts.items()},
