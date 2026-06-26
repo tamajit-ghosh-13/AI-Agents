@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Tuple
 import numpy as np
 from loguru import logger
 
+from src.query.role_intent import JDParser
 from src.reasoning.title_sieve import TitleSieve
 from src.inspection.integrity import IntegrityGuard
 from src.retrieval.semantic import SemanticScorer
@@ -11,11 +12,16 @@ from src.reasoning.evidence import EvidenceExtractor
 from src.reasoning.technical_depth import SkillMatcher
 from src.reasoning.product_context import CompanyMatcher
 from src.ranking.disqualifiers import DisqualifierEngine
+from src.orchestration.types import CandidateEvaluation, Verdict
 
 class RankingPipeline:
     def __init__(self, spec_path: str, tiers_path: str):
         self.spec_path = spec_path
         self.tiers_path = tiers_path
+
+        # R - Retrieve & Parse
+        self.jd_parser = JDParser(spec_path)
+        self.intent = self.jd_parser.parse()
 
         # Initialize all modules
         self.sieve = TitleSieve(spec_path)
