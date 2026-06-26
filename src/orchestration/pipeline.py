@@ -5,6 +5,7 @@ from loguru import logger
 from src.query.role_intent import JDParser
 from src.reasoning.title_sieve import TitleSieve
 from src.inspection.integrity import IntegrityGuard
+from src.inspection.coherence import CoherenceEngine
 from src.retrieval.semantic import SemanticScorer
 from src.reasoning.trajectory import TrajectoryEvaluator
 from src.reasoning.behavioral import BehavioralEvaluator
@@ -12,6 +13,8 @@ from src.reasoning.evidence import EvidenceExtractor
 from src.reasoning.technical_depth import SkillMatcher
 from src.reasoning.product_context import CompanyMatcher
 from src.ranking.disqualifiers import DisqualifierEngine
+from src.ranking.fusion import RankFusion
+from src.ranking.explainer import RankExplainer
 from src.orchestration.types import CandidateEvaluation, Verdict
 
 class RankingPipeline:
@@ -26,6 +29,7 @@ class RankingPipeline:
         # Initialize all modules
         self.sieve = TitleSieve(spec_path)
         self.integrity = IntegrityGuard(tiers_path)
+        self.coherence = CoherenceEngine()
         self.semantic = SemanticScorer(spec_path)
         self.trajectory = TrajectoryEvaluator(spec_path)
         self.behavioral = BehavioralEvaluator()
@@ -34,125 +38,122 @@ class RankingPipeline:
         self.company_matcher = CompanyMatcher(tiers_path)
         self.dq_engine = DisqualifierEngine(spec_path, tiers_path)
 
+        # Fusion & Explanation
+        self.fusion = RankFusion(self.intent)
+        self.explainer = RankExplainer()
+
     def run(self, candidates: List[Dict[str, Any]], jd_text: str) -> List[Dict[str, Any]]:
         """
-        Executes the 5-stage pipeline.
+        Executes the RIO-X Pipeline: Retrieve -> Inspect -> Orchestrate -> eXplain.
         """
-        logger.info(f"Starting pipeline for {len(candidates)} candidates...")
+        logger.info(f"Starting RIO-X pipeline for {len(candidates)} candidates...")
 
-        # Stage 1: The Sieve (Integrity & Noise Reduction)
-        stage1_pool = []
-        for cand in candidates:
-            cat, penalty = self.sieve.evaluate(cand)
-            if cat == "hard_reject":
-                continue
+        # Pre-compute semantic scores for the pool
+        semantic_scores = self.semantic.score_candidates(candidates, jd_text)
 
-            # Honeypot Check
-            is_hp, reason = self.integrity.check_honeypot(cand)
+        evaluations = []
+        for i, cand in enumerate(candidates):
+            cand_id = cand.get('candidate_id', 'unknown')
+
+            # --- Stage I: Inspect (Trust & Integrity) ---
+            # 1. Honeypot Check
+            is_hp, hp_reason = self.integrity.check_honeypot(cand)
             if is_hp:
-                logger.debug(f"Honeypot detected for {cand.get('candidate_id')}: {reason}")
+                logger.debug(f"Honeypot detected for {cand_id}: {hp_reason}")
                 continue
 
-            cand['sieve_category'] = cat
-            cand['sieve_penalty'] = penalty
-            stage1_pool.append(cand)
+            # 2. Coherence Check
+            trust_score, anomalies = self.coherence.analyze(cand)
 
-        logger.info(f"Stage 1 complete. Pool reduced to {len(stage1_pool)}")
-
-        # Deduplication and Boilerplate’s are applied to the whole pool
-        duplicates = self.integrity.detect_duplicates(stage1_pool)
-        # For this implementation, we'll just mark them as 'duplicate' and lower score
-        # instead of removing to allow a tie-breaker.
-
-        # Stage 2 & 3: Signal Engine & Refiner (Combined for efficiency)
-        # Compute semantic scores for the remaining pool
-        semantic_scores = self.semantic.score_candidates(stage1_pool, jd_text)
-
-        results = []
-        for i, cand in enumerate(stage1_pool):
-            # Technical Component Calculation
-            # 1. Semantic match
-            sem_score = semantic_scores[i]
-
-            # 2. Skill match
-            skill_score, skill_breakdown, triggers_floor = self.skills.score_skills(cand)
-
-            # 3. Trajectory fit
-            traj_score = self.trajectory.get_score(cand)
-
-            # 4. Production Evidence
-            evid_score, evidence_phrases = self.evidence.extract_evidence(cand)
-
-            # 5. Company Pedigree
-            history = cand.get('career_history', [])
-            pedigree_sum = 0.0
-            if history:
-                for job in history:
-                    _, weight = self.company_matcher.match_tier(job.get('company', ''))
-                    pedigree_sum += weight
-                pedigree_score = pedigree_sum / len(history)
-            else:
-                pedigree_score = 0.75
-
-            # Aggregating Technical Score (based on jd_spec weights)
-            # Note: Using simplified weighted sum here; real weights from spec
-            tech_score = (
-                sem_score * 0.20 +
-                skill_score * 0.30 +
-                traj_score * 0.20 +
-                evid_score * 0.20 +
-                pedigree_score * 0.10
+            # Initialize Evaluation Object
+            eval_obj = CandidateEvaluation(
+                candidate_id=cand_id,
+                trust_score=trust_score,
+                key_risks=[a.description for a in anomalies]
             )
 
-            # Required Skill Floor
-            if triggers_floor:
-                tech_score = min(tech_score, 0.40)
+            # --- Stage O: Orchestrate (Reasoning) ---
+            # We collect verdicts from all specialized agents
+            verdicts = {}
 
-            # Behavioral Multipliers
-            avail_mult = self.behavioral.get_score(cand)
+            # Technical Depth
+            verdicts["TechnicalDepthAgent"] = self.skills.evaluate(cand)
 
-            # Engagement multiplier (simplified)
-            signals = cand.get('redrob_signals', {})
-            eng_mult = 0.7 + (signals.get('profile_completeness_score', 50) / 100 * 0.3)
+            # Trajectory
+            verdicts["TrajectoryAgent"] = self.trajectory.evaluate(cand)
 
-            # Notice Period Multiplier
-            np_days = signals.get('notice_period_days', 30)
-            np_mult = 1.0 if np_days <= 30 else (0.8 if np_days <= 60 else 0.5)
+            # Evidence
+            verdicts["EvidenceAgent"] = self.evidence.evaluate(cand)
 
-            final_score = tech_score * avail_mult * eng_mult * np_mult
+            # Product Context
+            verdicts["ProductContextAgent"] = self.company_matcher.evaluate(cand)
 
-            # Stage 4: Disqualifiers
-            is_hard_reject, dq_mult, dq_reasons = self.dq_engine.evaluate_all(cand)
-            if is_hard_reject:
-                final_score = 0.0
+            # Behavioral / Availability
+            verdicts["AvailabilityAgent"] = self.behavioral.evaluate(cand)
+
+            # Title Sieve (Integrated as a signal)
+            cat, penalty = self.sieve.evaluate(cand)
+            verdicts["SieveAgent"] = Verdict(
+                agent="SieveAgent",
+                signal="strong" if cat == "direct_pass" else "weak",
+                confidence=1.0,
+                reasoning=f"Sieve category: {cat}",
+                score=0.5 if cat == "direct_pass" else 0.2
+            )
+
+            # Semantic match (from pre-computed)
+            verdicts["SemanticAgent"] = Verdict(
+                agent="SemanticAgent",
+                signal="strong" if semantic_scores[i] > 0.8 else "moderate",
+                confidence=0.7,
+                score=semantic_scores[i],
+                reasoning=f"Semantic similarity: {semantic_scores[i]:.2f}"
+            )
+
+            eval_obj.verdicts = verdicts
+
+            # Availability score from behavioral verdict
+            eval_obj.availability_score = verdicts["AvailabilityAgent"].score
+
+            # --- Stage X: eXplain & Rank ---
+            # 1. Disqualifiers (Hard Reject Gate)
+            dq_verdict = self.dq_engine.evaluate(cand)
+            eval_obj.risk_score = 1.0 - dq_verdict.score
+            eval_obj.key_risks.extend(dq_verdict.risks)
+
+            if dq_verdict.signal == "none": # Hard Reject
+                eval_obj.final_score = 0.0
+                eval_obj.tier = "rejected"
             else:
-                final_score *= dq_mult
+                # 2. Fusion
+                eval_obj.final_score = self.fusion.fuse(eval_obj)
 
-            # Sieve penalty
-            final_score += cand['sieve_penalty']
+                # Assign Tier based on score
+                if eval_obj.final_score > 0.8: eval_obj.tier = "strong_fit"
+                elif eval_obj.final_score > 0.5: eval_obj.tier = "possible_fit"
+                else: eval_obj.tier = "unlikely_fit"
 
-            results.append({
-                "candidate_id": cand.get('candidate_id'),
-                "final_score": float(np.clip(final_score, 0.0, 2.0)),
-                "tech_score": tech_score,
-                "dq_reasons": dq_reasons,
-                "evidence": evidence_phrases,
-                "candidate_data": cand
-            })
+            # 3. Explanation
+            explanation = self.explainer.explain(eval_obj)
+            eval_obj.justification = explanation["justification"]
+            eval_obj.key_risks = explanation["key_risks"]
 
-        # Final Sorting: Score DESC, candidate_id ASC (Deterministic)
-        results.sort(key=lambda x: (-x['final_score'], x['candidate_id']))
+            evaluations.append(eval_obj)
 
-        # Assign Relative Confidence Tiers based on rank
-        # Top 10% -> Strong Fit, Next 30% -> Possible Fit, Others -> Insufficient Data
-        num_results = len(results)
-        for i, res in enumerate(results):
-            rank_percentile = i / num_results if num_results > 0 else 1.0
-            if rank_percentile <= 0.10:
-                res['confidence_tier'] = "Strong Fit"
-            elif rank_percentile <= 0.40:
-                res['confidence_tier'] = "Possible Fit"
-            else:
-                res['confidence_tier'] = "Insufficient Data"
+        # Final Sorting: Score DESC, candidate_id ASC
+        evaluations.sort(key=lambda x: (-x.final_score, x.candidate_id))
 
-        return results
+        # Convert dataclasses to dicts for return
+        return [
+            {
+                "candidate_id": e.candidate_id,
+                "final_score": e.final_score,
+                "tier": e.tier,
+                "trust_score": e.trust_score,
+                "justification": e.justification,
+                "key_risks": e.key_risks,
+                "verdicts": {k: v.__dict__ for k, v in e.verdicts.items()},
+                "candidate_data": next(c for c in candidates if c.get('candidate_id') == e.candidate_id)
+            }
+            for e in evaluations
+        ]

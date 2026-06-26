@@ -1,6 +1,7 @@
 from typing import Dict, Any, Tuple, List
 import json
 from datetime import datetime
+from src.orchestration.types import Verdict, Evidence
 
 class DisqualifierEngine:
     """
@@ -29,10 +30,10 @@ class DisqualifierEngine:
             companies.update(self.tiers.get(tier, []))
         return companies
 
-    def evaluate_all(self, candidate: Dict[str, Any]) -> Tuple[bool, float, List[str]]:
+    def evaluate(self, candidate: Dict[str, Any]) -> Verdict:
         """
         Evaluates all DQ rules.
-        Returns (is_hard_reject, total_multiplier, triggered_rules).
+        Returns a structured Verdict.
         """
         is_hard_reject = False
         total_multiplier = 1.0
@@ -40,12 +41,12 @@ class DisqualifierEngine:
 
         # Run DQ1 to DQ7
         for dq_id in ["DQ1_pure_research_career", "DQ2_shallow_ai_experience", "DQ3_non_coding_senior",
-                      "DQ4_title_inflation_hopper", "DQ5_pure_consulting_background",
-                      "DQ6_wrong_primary_domain", "DQ7_closed_source_only"]:
+                     "DQ4_title_inflation_hopper", "DQ5_pure_consulting_background",
+                     "DQ6_wrong_primary_domain", "DQ7_closed_source_only"]:
 
             triggered, multiplier, reason = self._check_rule(dq_id, candidate)
             if triggered:
-                triggered_rules.append(f"{dq_id}: {reason}")
+                triggered_rules.append(reason)
                 if self.dq_rules.get(dq_id, {}).get('severity') == 'hard_reject':
                     is_hard_reject = True
                     total_multiplier = 0.0
@@ -53,7 +54,18 @@ class DisqualifierEngine:
                 else:
                     total_multiplier *= multiplier
 
-        return is_hard_reject, total_multiplier, triggered_rules
+        signal = "none" if is_hard_reject else ("moderate" if len(triggered_rules) == 0 else "weak")
+        score = 0.0 if is_hard_reject else total_multiplier
+
+        return Verdict(
+            agent="DisqualifierEngine",
+            signal=signal,
+            confidence=1.0,
+            evidence=[Evidence(text=r, source="disqualifier_rules") for r in triggered_rules],
+            risks=triggered_rules,
+            reasoning=f"Triggered {len(triggered_rules)} disqualifier rules. Hard reject: {is_hard_reject}.",
+            score=score
+        )
 
     def _check_rule(self, rule_id: str, candidate: Dict[str, Any]) -> Tuple[bool, float, str]:
         rule = self.dq_rules.get(rule_id, {})

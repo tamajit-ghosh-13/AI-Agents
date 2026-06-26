@@ -1,5 +1,6 @@
 from typing import Dict, Any, List, Tuple
 import json
+from src.orchestration.types import Verdict, Evidence
 
 class SkillMatcher:
     """
@@ -14,14 +15,19 @@ class SkillMatcher:
         self.preferred = self.spec.get('preferred_skills', {})
         self.proficiency_map = {"expert": 1.2, "advanced": 1.0, "intermediate": 0.7, "beginner": 0.4}
 
-    def score_skills(self, candidate: Dict[str, Any]) -> Tuple[float, Dict[str, float], bool]:
+    def evaluate(self, candidate: Dict[str, Any]) -> 'Verdict':
         """
-        Computes a combined skill match score.
-        Returns (total_score, skill_breakdown, triggers_floor_cap).
+        Computes a combined skill match score and returns a structured Verdict.
         """
         cand_skills = candidate.get('skills', [])
         if not cand_skills:
-            return 0.0, {}, True if len(self.required) >= 2 else False
+            return Verdict(
+                agent="TechnicalDepthAgent",
+                signal="none",
+                confidence=1.0,
+                reasoning="No skills provided in profile.",
+                score=0.0
+            )
 
         # Map skills for easy lookup: {name_lower: {proficiency, duration}}
         skills_map = {s.get('name', '').lower(): s for s in cand_skills}
@@ -84,16 +90,35 @@ class SkillMatcher:
         top_preferred_sum = sum(sorted(preferred_scores, reverse=True)[:3])
 
         # Normalize total
-        # Extract weights from the config dictionaries
         required_weights = [config.get('weight', 1.0) if isinstance(config, dict) else 1.0 for config in self.required.values()]
         preferred_weights = [config.get('weight', 0.4) if isinstance(config, dict) else 0.4 for config in self.preferred.values()]
 
         total_weight = sum(required_weights) + sum(preferred_weights)
-
         final_score = sum(skill_scores.values()) + top_preferred_sum
+        normalized_score = min(1.0, final_score / (total_weight if total_weight > 0 else 1.0))
 
-        # Required skill floor: if < 2 required skills are met, cap total score later.
-        # Here we just signal it.
-        triggers_floor_cap = (required_met_count < 2)
+        # Determine Signal
+        if normalized_score > 0.8: signal = "strong"
+        elif normalized_score > 0.5: signal = "moderate"
+        elif normalized_score > 0.2: signal = "weak"
+        else: signal = "none"
 
-        return float(final_score), skill_scores, triggers_floor_cap
+        # Evidence construction
+        evidence = [
+            Evidence(text=f"Matched {skill} with score {score:.2f}", source=f"skills.{skill}")
+            for skill, score in skill_scores.items()
+        ]
+
+        risks = []
+        if required_met_count < 2:
+            risks.append("Fails required skill floor: fewer than 2 core skills matched.")
+
+        return Verdict(
+            agent="TechnicalDepthAgent",
+            signal=signal,
+            confidence=0.9 if len(cand_skills) > 0 else 0.5,
+            evidence=evidence,
+            risks=risks,
+            reasoning=f"Candidate matches {required_met_count} required skills. Total normalized score: {normalized_score:.2f}",
+            score=normalized_score
+        )
