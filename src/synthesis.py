@@ -2,8 +2,176 @@ from typing import Dict, Any, List
 import json
 import yaml
 import re
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
 
 class ReasonSynthesizer:
+    """
+    Generates human‑readable, evidence‑based justifications for a candidate's rank.
+    Dynamically extracts context, skills, and JD‑aligned quotes of achievements from candidate resumes.
+    Uses a SentenceTransformer to embed both the job description and candidate sentences, selecting the most similar ones.
+    """
+
+    # Load model once at class level to avoid re‑initialisation per candidate
+    _model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    def __init__(self):
+        # Load JD spec once per synthesizer instance (cached across candidates)
+        try:
+            with open("config/jd_spec.json", "r") as f:
+                spec = json.load(f)
+            # Assume the JD description is under a key called "description"; fall back to whole JSON string.
+            jd_text = spec.get("description", json.dumps(spec))
+        except Exception:
+            jd_text = ""
+        # Pre‑compute embedding for the JD (normalize for cosine similarity)
+        self._jd_embedding = self._model.encode([jd_text])[0]
+        norm = np.linalg.norm(self._jd_embedding)
+        self._jd_embedding = self._jd_embedding / norm if norm != 0 else self._jd_embedding
+
+    def _embed_sentences(self, sentences: List[str]) -> np.ndarray:
+        """Return L2‑normalized embeddings for a list of sentences."""
+        if not sentences:
+            return np.array([])
+        emb = self._model.encode(sentences)
+        norms = np.linalg.norm(emb, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        return emb / norms
+
+    def synthesize(self, result: Dict[str, Any]) -> str:
+        """Build a highly personalized reasoning string based on the candidate's profile.
+        The function now selects JD‑relevant achievement sentences via embedding similarity.
+        """
+        cand = result["candidate_data"]
+        score = result["final_score"]
+        dq_reasons = result.get("key_risks", [])
+        tier = result.get("tier", "unlikely_fit")
+
+        if score == 0:
+            return f"Rejected: {', '.join(dq_reasons) if dq_reasons else 'Does not meet basic requirements'}."
+
+        # Load company tier data (unchanged)
+        try:
+            with open("config/company_tiers.yaml", "r") as f:
+                tiers_data = yaml.safe_load(f)
+        except Exception:
+            tiers_data = {}
+
+        # 1. Candidate Info
+        profile = cand.get('profile', {})
+        exp = profile.get('years_of_experience', 0)
+        title = profile.get('current_title', '')
+        company = profile.get('current_company', '')
+        location = profile.get('location', 'Unknown Location')
+        notice = cand.get('redrob_signals', {}).get('notice_period_days', 30)
+
+        history = cand.get('career_history', [])
+        if not title and history:
+            title = history[0].get('title', '')
+        if not title:
+            title = "AI / Software Engineer"
+        if not company and history:
+            company = history[0].get('company', '')
+
+        intro = f"This candidate is a {title} at {company} with {exp}y experience." if company else f"This candidate is a {title} with {exp}y experience."
+
+        # 2. Company Pedigree
+        ai_native_list = [c.lower() for c in tiers_data.get("ai_native", [])]
+        tier1_list = [c.lower() for c in tiers_data.get("product_tier1", [])]
+        product_list = [c.lower() for c in tiers_data.get("product_tier2", [])] + \
+                       [c.lower() for c in tiers_data.get("product_tier3_growth", [])] + \
+                       [c.lower() for c in tiers_data.get("saas_b2b", [])]
+        aliases = {k.lower(): v.lower() for k, v in tiers_data.get("aliases", {}).items()}
+        ai_companies = []
+        tier1_companies = []
+        product_companies = []
+        for job in history:
+            co = job.get('company', '')
+            if not co:
+                continue
+            co_lower = co.lower()
+            co_resolved = aliases.get(co_lower, co_lower)
+            if any(ac == co_resolved or ac in co_resolved for ac in ai_native_list):
+                ai_companies.append(co)
+            elif any(t1 == co_resolved or t1 in co_resolved for t1 in tier1_list):
+                tier1_companies.append(co)
+            elif any(pr == co_resolved or pr in co_resolved for pr in product_list):
+                product_companies.append(co)
+        pedigree_parts = []
+        if ai_companies:
+            pedigree_parts.append(f"AI-native background at {ai_companies[0]}")
+        if tier1_companies:
+            pedigree_parts.append(f"Tier-1 engineering at {tier1_companies[0]}")
+        if product_companies and not (ai_companies or tier1_companies):
+            pedigree_parts.append(f"product-centric background at {product_companies[0]}")
+        pedigree_str = f" They possess a strong {', and '.join(pedigree_parts)}." if pedigree_parts else ""
+
+        # 3. Required skills matched (unchanged)
+        concrete_matches = []
+        cand_skills = cand.get('skills', [])
+        skills_map = {s.get('name', '').lower(): s for s in cand_skills}
+        try:
+            with open("config/jd_spec.json", "r") as f:
+                spec = json.load(f)
+        except Exception:
+            spec = {}
+        required_skills_config = spec.get('required_skills', {})
+        for skill_cat, config in required_skills_config.items():
+            if skill_cat.startswith('_'):
+                continue
+            surface_forms = config.get('surface_forms_skills_array', []) if isinstance(config, dict) else []
+            for form in surface_forms:
+                if form.lower() in skills_map:
+                    concrete_matches.append(form)
+                    break
+        skills_str = ""
+        if concrete_matches:
+            unique_skills = []
+            for s in concrete_matches:
+                if s.lower() not in [us.lower() for us in unique_skills]:
+                    unique_skills.append(s)
+            skills_str = f" Technically, they bring verified skills in {', '.join(unique_skills[:4])}."
+
+        # 4. Production Evidence & JD‑aligned Achievements
+        # Collect candidate sentences that contain high‑signal keywords
+        keywords = ["production", "ndcg", "mrr", "map", "re‑ranker", "reranker", "embedding", "vector", "search", "shipped", "deployed", "implemented", "scaled", "latency", "pipeline", "built", "owned"]
+        candidate_sentences = []
+        for job in history:
+            desc = job.get('description', '')
+            if not desc:
+                continue
+            for s in re.split(r'\.\s+', desc):
+                s = s.strip()
+                if not s:
+                    continue
+                if any(kw in s.lower() for kw in keywords):
+                    clean = re.sub(r"\s+", " ", s)
+                    if clean.endswith('.'): clean = clean[:-1]
+                    if 25 < len(clean) < 180:
+                        candidate_sentences.append(clean)
+        # Embed sentences and compute cosine similarity to JD embedding
+        achievements_str = ""
+        if candidate_sentences:
+            sent_emb = self._embed_sentences(candidate_sentences)
+            # Cosine similarity = dot product because embeddings are normalized
+            sims = sent_emb @ self._jd_embedding
+            # Pick top 2 most similar sentences
+            top_idxs = np.argsort(sims)[-2:][::-1]
+            top_sentences = [candidate_sentences[i] for i in top_idxs]
+            quoted = [f'"{s}"' for s in top_sentences]
+            achievements_str = f" Key achievements from their history include: {'; and '.join(quoted)}."
+
+        # 5. Notice Period & Location
+        availability_str = f" They are based in {location} (notice period: {notice} days)."
+
+        # Assemble full reasoning
+        reasoning = f"[{tier}] {intro}{pedigree_str}{skills_str}{achievements_str}{availability_str}"
+        reasoning = re.sub(r"\.+", ".", reasoning)
+        if dq_reasons:
+            reasoning += f" Note: {', '.join(dq_reasons)}."
+        return reasoning
+
     """
     Generates human-readable, evidence-based justifications for a candidate's rank.
     Dynamically extracts context, skills, and direct quotes of achievements from candidate resumes.

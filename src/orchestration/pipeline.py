@@ -32,7 +32,7 @@ class RankingPipeline:
         self.trust_engine = TrustEngine()
         self.semantic = SemanticScorer(spec_path)
         self.trajectory = TrajectoryEvaluator(spec_path)
-        self.behavioral = BehavioralEvaluator()
+        self.behavioral = BehavioralEvaluator(self.intent)
         self.evidence = EvidenceExtractor(spec_path)
         self.skills = SkillMatcher(spec_path)
         self.company_matcher = CompanyMatcher(tiers_path)
@@ -62,6 +62,18 @@ class RankingPipeline:
                 logger.debug(f"Honeypot detected for {cand_id}: {hp_reason}")
                 continue
 
+            # 2. Fast Title Sieve (Early Exit)
+            cat, penalty = self.sieve.evaluate(cand)
+            if cat == "hard_reject":
+                eval_obj = CandidateEvaluation(
+                    candidate_id=cand_id,
+                    final_score=0.0,
+                    tier="rejected",
+                    final_score_calculation="SIEVE_REJECT"
+                )
+                evaluations.append(eval_obj)
+                continue
+
             # 2. Trust & Coherence Check
             trust_score, calculation, anomalies = self.trust_engine.analyze(cand)
 
@@ -69,7 +81,7 @@ class RankingPipeline:
             eval_obj = CandidateEvaluation(
                 candidate_id=cand_id,
                 trust_score=trust_score,
-                calculation=calculation,
+                trust_calculation=calculation,
                 key_risks=[a for a in anomalies]
             )
 
@@ -93,7 +105,6 @@ class RankingPipeline:
             verdicts["AvailabilityAgent"] = self.behavioral.evaluate(cand)
 
             # Title Sieve (Integrated as a signal)
-            cat, penalty = self.sieve.evaluate(cand)
             verdicts["SieveAgent"] = Verdict(
                 agent="SieveAgent",
                 signal="strong" if cat == "direct_pass" else "weak",
@@ -125,13 +136,22 @@ class RankingPipeline:
             if dq_verdict.signal == "none": # Hard Reject
                 eval_obj.final_score = 0.0
                 eval_obj.tier = "rejected"
+                eval_obj.final_score_calculation = "DQ_REJECT"
             else:
                 # 2. Fusion
-                eval_obj.final_score = self.fusion.fuse(eval_obj)
+                score, calc = self.fusion.fuse(eval_obj)
+                eval_obj.final_score = score
+                eval_obj.final_score_calculation = calc
 
-                # Assign Tier based on score
-                if eval_obj.final_score > 0.8: eval_obj.tier = "strong_fit"
-                elif eval_obj.final_score > 0.5: eval_obj.tier = "possible_fit"
+
+                # Assign Tier based on requested mapping
+                s = eval_obj.final_score
+                if s >= 55: eval_obj.tier = "perfect_fit"
+                elif s >= 50: eval_obj.tier = "ideal_fit"
+                elif s >= 45: eval_obj.tier = "strong_fit"
+                elif s >= 40: eval_obj.tier = "good_fit"
+                elif s >= 35: eval_obj.tier = "potential_fit"
+                elif s >= 30: eval_obj.tier = "marginal_fit"
                 else: eval_obj.tier = "unlikely_fit"
 
             # 3. Explanation
@@ -145,6 +165,7 @@ class RankingPipeline:
         evaluations.sort(key=lambda x: (-x.final_score, x.candidate_id))
 
         # Convert dataclasses to dicts for return
+        cand_map = {c.get('candidate_id'): c for c in candidates}
         results = []
         for e in evaluations:
             results.append({
@@ -152,10 +173,11 @@ class RankingPipeline:
                 "final_score": e.final_score,
                 "tier": e.tier,
                 "trust_score": e.trust_score,
-                "calculation": e.calculation,
+                "trust_score_calculation": e.trust_calculation,
+                "final_score_calculation": e.final_score_calculation,
                 "justification": e.justification,
                 "key_risks": e.key_risks,
                 "verdicts": {k: v.__dict__ for k, v in e.verdicts.items()},
-                "candidate_data": next(c for c in candidates if c.get('candidate_id') == e.candidate_id)
+                "candidate_data": cand_map.get(e.candidate_id, {})
             })
         return results

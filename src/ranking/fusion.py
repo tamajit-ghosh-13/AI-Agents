@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 from src.orchestration.types import CandidateEvaluation, Verdict
 from src.query.role_intent import RoleIntent
 
@@ -12,7 +12,7 @@ class RankFusion:
         self.intent = intent
         self.policy = intent.scoring_policy
 
-    def fuse(self, eval_obj: CandidateEvaluation) -> float:
+    def fuse(self, eval_obj: CandidateEvaluation) -> Tuple[float, str]:
         """
         Computes the final score using the formula:
         final_score = relevance_score * trust_score * availability_score * (1 - risk_score)
@@ -27,9 +27,19 @@ class RankFusion:
         risk_score = eval_obj.risk_score
 
         # Multiplicative Fusion
-        final_score = relevance_score * trust_score * availability_score * (1.0 - risk_score)
+        # Base multiplicative fusion
+        base_score = relevance_score * trust_score * availability_score * (1.0 - risk_score)
 
-        return float(final_score)
+        # Reasoning boost: give higher value to strong reasoning statements.
+        # Compute total words across all verdict reasoning texts.
+        reasoning_words = sum(len(v.reasoning.split()) for v in eval_obj.verdicts.values()) if eval_obj.verdicts else 0
+        reasoning_factor = min(reasoning_words * 0.001, 0.10)  # up to 10% boost
+        final_score = base_score * (1.0 + reasoning_factor)
+
+        breakdown = (f"Rel:{relevance_score:.2f} * Trust:{trust_score:.1f} * Avail:{availability_score:.2f} "
+                    f"* (1-Risk:{risk_score:.2f}) * ReasonBoost:{reasoning_factor:.3f}")
+
+        return float(final_score), breakdown
 
     def _compute_relevance(self, verdicts: Dict[str, Verdict]) -> float:
         """

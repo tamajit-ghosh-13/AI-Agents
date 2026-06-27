@@ -13,4 +13,4 @@ wheels/
 candidates.jsonl
 job_description.txtcandidates.jsonl
 candidates.jsonl
-submission.csv
+*.csv

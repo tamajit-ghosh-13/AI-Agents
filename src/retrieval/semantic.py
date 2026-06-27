@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple, Optional
@@ -15,6 +16,24 @@ class SemanticScorer:
 
         # Lazy loading of model to avoid expensive init during every instantiation
         self._model = None
+        
+        # Precomputed embeddings
+        self.precomputed_embeddings = None
+        self.candidate_idx_map = {}
+        self._load_precomputed_embeddings()
+
+    def _load_precomputed_embeddings(self):
+        npy_path = "candidate_embeddings.npy"
+        map_path = "candidate_idx_map.json"
+        
+        if os.path.exists(npy_path) and os.path.exists(map_path):
+            logger.info(f"Loading precomputed embeddings from {npy_path}...")
+            self.precomputed_embeddings = np.load(npy_path)
+            with open(map_path, 'r') as f:
+                self.candidate_idx_map = json.load(f)
+            logger.info("Successfully loaded precomputed embeddings.")
+        else:
+            logger.info("No precomputed embeddings found. Will compute on the fly.")
 
     @property
     def model(self):
@@ -58,35 +77,50 @@ class SemanticScorer:
             return np.array([])
 
         # Use full JD text for embedding to avoid keyword-stuffing traps
-        target_embedding = self.model.encode([jd_text])[0]
-
-        # Batch encode candidates for speed
-        candidate_texts = [self.create_candidate_text(c) for c in candidates]
-        candidate_embeddings = self.model.encode(candidate_texts, show_progress_bar=False)
-
-        # Normalize vectors for cosine similarity
-        cand_norms = np.linalg.norm(candidate_embeddings, axis=1, keepdims=True)
-        # Avoid division by zero
-        cand_norms[cand_norms == 0] = 1.0
-        norm_cand_embeddings = candidate_embeddings / cand_norms
-
         target_embedding = self.model.encode(
             [jd_text],
             convert_to_numpy=True
         )[0]
 
-        candidate_embeddings = self.model.encode(
-            candidate_texts,
-            show_progress_bar=False,
-            convert_to_numpy=True
-        )
-
         target_norm = np.linalg.norm(target_embedding)
-        if target_norm == 0: return np.zeros(len(candidates))
+        if target_norm == 0: 
+            return np.zeros(len(candidates))
         norm_target = target_embedding / target_norm
 
-        # Dot product of normalized vectors is Cosine Similarity
-        scores = np.dot(norm_cand_embeddings, norm_target)
+        scores = np.zeros(len(candidates))
+
+        if self.precomputed_embeddings is not None:
+            # We have precomputed normalized embeddings!
+            # Let's map candidate IDs to indices
+            for i, cand in enumerate(candidates):
+                cid = cand.get("candidate_id")
+                idx = self.candidate_idx_map.get(cid)
+                if idx is not None:
+                    # Dot product of normalized vectors
+                    scores[i] = np.dot(self.precomputed_embeddings[idx], norm_target)
+                else:
+                    # Fallback for candidates missing from precomputation
+                    text = self.create_candidate_text(cand)
+                    cand_emb = self.model.encode([text], convert_to_numpy=True)[0]
+                    cand_norm = np.linalg.norm(cand_emb)
+                    if cand_norm > 0:
+                        scores[i] = np.dot(cand_emb / cand_norm, norm_target)
+        else:
+            # Fallback to computing all on the fly
+            candidate_texts = [self.create_candidate_text(c) for c in candidates]
+            candidate_embeddings = self.model.encode(
+                candidate_texts,
+                show_progress_bar=False,
+                convert_to_numpy=True
+            )
+
+            # Normalize vectors for cosine similarity
+            cand_norms = np.linalg.norm(candidate_embeddings, axis=1, keepdims=True)
+            cand_norms[cand_norms == 0] = 1.0
+            norm_cand_embeddings = candidate_embeddings / cand_norms
+
+            # Dot product of normalized vectors is Cosine Similarity
+            scores = np.dot(norm_cand_embeddings, norm_target)
 
         return scores
 

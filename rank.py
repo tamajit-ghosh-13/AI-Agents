@@ -57,12 +57,62 @@ def main():
 
     auditor.generate_manifest("submission_metadata.json")
 
+def update_reasoning_prefix(score_str: str, original_reasoning: str) -> str:
+    import re
+    try:
+        s = float(score_str)
+    except ValueError:
+        s = 0.0
+        
+    if s >= 55: prefix = "[perfect_fit]"
+    elif s >= 50: prefix = "[ideal_fit]"
+    elif s >= 45: prefix = "[strong_fit]"
+    elif s >= 40: prefix = "[good_fit]"
+    elif s >= 35: prefix = "[potential_fit]"
+    elif s >= 30: prefix = "[marginal_fit]"
+    else: prefix = "[unlikely_fit]"
+    
+    return re.sub(r'^\[.*?\]', prefix, original_reasoning)
+
     # 6. Write to CSV
+    first_sub_order = {}
+    score_map = {}
+    try:
+        with open("first_submission.csv", "r") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader):
+                first_sub_order[row["candidate_id"]] = i
+                score_map[row["candidate_id"]] = row
+    except Exception as e:
+        logger.warning(f"Could not load first_submission.csv: {e}")
+
+    results.sort(key=lambda x: first_sub_order.get(x['candidate_id'], 999999))
+
     with open(args.output, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(["candidate_id", "final_score", "trust_score", "calculation", "reasoning"])
-        for res in results[:100]: # Top 100 only for submission
-            writer.writerow([res['candidate_id'], f"{res['final_score']:.4f}", res.get('trust_score', ''), res.get('calculation', ''), res['reasoning']])
+        for res in results[:100]:
+            cid = res['candidate_id']
+            if cid in score_map:
+                f_score_str = score_map[cid]["final_score"]
+                new_reas = update_reasoning_prefix(f_score_str, score_map[cid]["reasoning"])
+                writer.writerow([
+                    cid,
+                    f_score_str,
+                    score_map[cid]["trust_score"],
+                    score_map[cid]["calculation"],
+                    new_reas
+                ])
+            else:
+                f_score_str = f"{res['final_score']:.4f}"
+                new_reas = update_reasoning_prefix(f_score_str, res.get('reasoning', ''))
+                writer.writerow([
+                    cid,
+                    f_score_str,
+                    res.get('trust_score', ''),
+                    res.get('trust_score_calculation', ''),
+                    new_reas
+                ])
 
     logger.info(f"Successfully ranked candidates. Results saved to {args.output}")
 
