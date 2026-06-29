@@ -10,8 +10,6 @@ wheels/
 .venv
 .claude
 
-candidates.jsonl
-job_description.txtcandidates.jsonl
-candidates.jsonl
+
 *.csv
 
