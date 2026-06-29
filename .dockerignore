@@ -1,0 +1,28 @@
+# Python artifacts
+__pycache__/
+*.py[oc]
+*.egg-info/
+dist/
+build/
+wheels/
+
+# Virtual environments
+.venv/
+
+# Git internals
+.git/
+.gitattributes
+
+# IDE / OS files
+.DS_Store
+.claude/
+
+# Large binary files already baked via LFS
+# (keep candidate_embeddings.npy and candidates_sample.jsonl — needed at runtime)
+candidates.jsonl
+
+# Output files
+submission.csv
+submission_sample.csv
+submission_metadata.json
+first_submission.csv
