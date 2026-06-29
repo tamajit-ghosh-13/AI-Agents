@@ -1,4 +1,4 @@
-# ShortlistIQ — Redrob AI Candidate Ranker
+# \*ShortlistIQ — Redrob AI Candidate Ranker
 
 > **Team:** \*ShortlistIQ · **Challenge:** India Runs Data & AI · **Stage:** 3
 
@@ -132,6 +132,10 @@ python rank.py --input candidates.jsonl --output submission.csv --jd job_descrip
 | `[marginal_fit]`  | ≥ 30        |
 | `[unlikely_fit]`  | < 30        |
 
+**No need for ≥ 60 is because the practical feasible cap for final_score is 58**
+
+![alt text](image.png)
+
 ---
 
 ## Pipeline Architecture
@@ -159,7 +163,7 @@ candidates.jsonl + job_description.txt
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │  Semantic Fusion Engine                                 │
-│  • Embedding similarity (all-MiniLM-L6-v2)             │
+│  • Embedding similarity (all-MiniLM-L6-v2)              │
 │  • Disqualifier hard-gate (DQ1–DQ7)                     │
 │  • Weighted score fusion                                │
 └──────────────────────────┬──────────────────────────────┘
