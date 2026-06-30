@@ -108,7 +108,16 @@ class DisqualifierEngine:
             triggered, multiplier, reason = self._check_rule(dq_id, candidate)
             if triggered:
                 triggered_rules.append(reason)
-                rule_is_hard_reject = self.dq_rules.get(dq_id, {}).get('severity') == 'hard_reject'
+                severity = self.dq_rules.get(dq_id, {}).get('severity', '')
+                # Three label strings in jd_spec.json: 'hard_reject' (DQ1),
+                # 'soft_reject' (DQ2-5), and 'reject' (DQ6, DQ7).
+                # Only 'hard_reject' zeroes the candidate; 'reject' and 'soft_reject'
+                # both route to the soft multiplier path.
+                # DQ7 is additionally protected by _never_hard_reject, which prevents
+                # it from zeroing even if the spec file were to label it 'hard_reject'.
+                rule_is_hard_reject = severity == 'hard_reject'
+                rule_is_soft = severity in ('soft_reject', 'reject')
+
                 if rule_is_hard_reject and dq_id not in self._never_hard_reject:
                     is_hard_reject = True
                     total_multiplier = 0.0
@@ -121,6 +130,8 @@ class DisqualifierEngine:
                     mild_multiplier = max(multiplier, 0.6)
                     total_multiplier *= mild_multiplier
                 else:
+                    # Covers both soft_reject and reject -- always a multiplier,
+                    # never a zero.  DQ6 ('reject', multiplier=0.2) stays recoverable.
                     total_multiplier *= multiplier
 
         signal = "none" if is_hard_reject else ("moderate" if len(triggered_rules) == 0 else "weak")
@@ -362,13 +373,14 @@ class DisqualifierEngine:
             signals = candidate.get('redrob_signals', {})
             github_score = signals.get('github_activity_score', -1)
 
-            # -1 is a sentinel for "no data," not "confirmed zero activity."
-            # Treating missing data as proof of low GitHub activity wrongly
-            # penalizes candidates whose platform profile simply never linked
-            # a GitHub account -- which says nothing about their actual
-            # external validation. Only an explicitly recorded low score
-            # (0-10) counts as a real signal here.
-            has_known_low_github = 0 <= github_score <= 10
+            # jd_spec.json explicitly states:
+            #   "redrob_signals.github_activity_score <= 10 OR == -1"
+            # as the trigger condition for DQ7. -1 is the spec's sentinel
+            # for "no GitHub data linked" and is intentionally treated the
+            # same as a confirmed low score (0-10) — candidates with 5+ years
+            # who haven't linked external validation should be flagged.
+            # (Earlier code silently overrode this to 'skip on -1'; reversed.)
+            has_known_low_github = (github_score == -1) or (0 <= github_score <= 10)
 
             all_text = (candidate.get('profile', {}).get('summary', '') + " " +
                         " ".join([j.get('description', '') for j in candidate.get('career_history', [])])).lower()

@@ -24,6 +24,7 @@ class CandidateEvaluation:
     trust_calculation: str = ""
     final_score_calculation: str = ""
     availability_score: float = 1.0
+    location_score: float = 0.70  # default: hybrid_flexible fallback
     risk_score: float = 0.0
     final_score: float = 0.0
     tier: str = "unlikely_fit"

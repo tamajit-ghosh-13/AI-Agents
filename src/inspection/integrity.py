@@ -3,6 +3,7 @@ from loguru import logger
 from typing import List, Dict, Any, Tuple, Set
 import re
 
+
 class IntegrityGuard:
     def __init__(self, config_path: str):
         with open(config_path, 'r') as f:
@@ -55,39 +56,45 @@ class IntegrityGuard:
 
     def detect_boilerplate(self, candidates: List[Dict[str, Any]]) -> Set[str]:
         """
-        Flags candidates with near-identical descriptions.
-        Returns a set of candidate IDs.
+        Flags candidates with near-identical job descriptions at the per-description
+        level (not per-candidate blob). This catches the actual data pattern where one
+        shared sentence is embedded in otherwise-distinct career histories.
+
+        Optimized to O(N) using an exact 10-gram overlap algorithm, replacing the
+        O(N^2) pairwise Jaccard which hangs on pools of 100,000+ candidates.
         """
-        descriptions = []
-        cand_ids = []
-        for c in candidates:
-            cid = c.get('candidate_id')
-            if not cid: continue
+        ngram_to_cids = {}
+        flagged: Set[str] = set()
 
-            # Combine all job descriptions for the candidate
-            text = " ".join([j.get('description', '').lower() for j in c.get('career_history', [])]).strip()
-            if text:
-                descriptions.append(text)
-                cand_ids.append(cid)
+        for cand in candidates:
+            cid = cand.get('candidate_id')
+            if not cid:
+                continue
+            for job in cand.get('career_history', []):
+                desc = job.get('description', '').lower().strip()
+                if not desc:
+                    continue
+                tokens = desc.split()
+                if len(tokens) < 10:
+                    continue
+                
+                # Generate 10-grams to detect copied sentences
+                for i in range(len(tokens) - 9):
+                    ngram = tuple(tokens[i:i+10])
+                    if ngram not in ngram_to_cids:
+                        ngram_to_cids[ngram] = set()
+                    ngram_to_cids[ngram].add(cid)
 
-        if not descriptions:
-            return set()
+        # Flag any candidate involved in a collision
+        for cids in ngram_to_cids.values():
+            if len(cids) > 1:
+                flagged.update(cids)
 
-        flagged = set()
-        # Optimized similarity check: only compare if length is similar
-        for i in range(len(descriptions)):
-            set_i = set(descriptions[i].split())
-            if not set_i: continue
-            for j in range(i + 1, len(descriptions)):
-                set_j = set(descriptions[j].split())
-                if not set_j: continue
-
-                intersection = len(set_i.intersection(set_j))
-                union = len(set_i.union(set_j))
-                if intersection / union > 0.85: # Higher threshold for boilerplate
-                    flagged.add(cand_ids[i])
-                    flagged.add(cand_ids[j])
-
+        if flagged:
+            logger.warning(
+                f"detect_boilerplate: flagged {len(flagged)} candidates with "
+                f"shared boilerplate sequences"
+            )
         return flagged
 
     def evaluate_pedigree(self, candidate: Dict[str, Any]) -> Tuple[float, str]:
@@ -128,7 +135,8 @@ class IntegrityGuard:
 
         for cand in candidates:
             cid = cand.get('candidate_id')
-            if not cid: continue
+            if not cid:
+                continue
 
             # Fingerprint: Normalized summary + Sorted list of companies + total exp
             fingerprint = (
@@ -143,4 +151,9 @@ class IntegrityGuard:
             else:
                 seen_hashes[fingerprint] = cid
 
+        if duplicates:
+            logger.warning(
+                f"detect_duplicates: flagged {len(duplicates)} candidates with "
+                f"identical fingerprint (summary + companies + experience)"
+            )
         return duplicates

@@ -1,8 +1,8 @@
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Set
 import numpy as np
 from loguru import logger
 
-from src.query.role_intent import JDParser
+from src.query.role_intent import JDParser, LocationPolicy
 from src.reasoning.title_sieve import TitleSieve
 from src.inspection.integrity import IntegrityGuard
 from src.inspection.trust_engine import TrustEngine
@@ -42,6 +42,37 @@ class RankingPipeline:
         self.fusion = RankFusion(self.intent)
         self.explainer = RankExplainer()
 
+    def _compute_location_score(self, candidate: Dict[str, Any]) -> float:
+        """
+        Scores candidate location fit against the role's LocationPolicy.
+        Uses the intent parsed from jd_spec.json (primary=["Pune","Noida"],
+        acceptable=["Hyderabad","Mumbai","Delhi NCR","Bangalore"],
+        work_mode="hybrid_flexible").
+        """
+        loc_policy: LocationPolicy = self.intent.role_identity.location
+        cand_location = candidate.get('profile', {}).get('location', '').lower().strip()
+
+        if not cand_location:
+            # Unknown location — apply hybrid_flexible default
+            return 0.70
+
+        # Primary city match
+        if any(p.lower() in cand_location or cand_location in p.lower()
+               for p in loc_policy.primary):
+            return 1.0
+
+        # Acceptable city match
+        if any(a.lower() in cand_location or cand_location in a.lower()
+               for a in loc_policy.acceptable):
+            return 0.85
+
+        # Work mode permits remote / hybrid
+        work_mode = (loc_policy.work_mode or '').lower()
+        if 'remote' in work_mode or 'hybrid' in work_mode:
+            return 0.70
+
+        return 0.60
+
     def run(self, candidates: List[Dict[str, Any]], jd_text: str) -> List[Dict[str, Any]]:
         """
         Executes the RIO-X Pipeline: Retrieve -> Inspect -> Orchestrate -> eXplain.
@@ -50,6 +81,20 @@ class RankingPipeline:
 
         # Pre-compute semantic scores for the pool
         semantic_scores = self.semantic.score_candidates(candidates, jd_text)
+
+        # --- Pool-level integrity checks (run ONCE before per-candidate loop) ---
+        # detect_boilerplate() uses per-description Jaccard; detect_duplicates() uses
+        # profile fingerprinting. Both return sets of candidate IDs to flag.
+        logger.info("Running pool-level integrity checks (boilerplate + duplicates)...")
+        boilerplate_ids: Set[str] = self.integrity.detect_boilerplate(candidates)
+        duplicate_ids: Set[str] = self.integrity.detect_duplicates(candidates)
+        flagged_ids: Set[str] = boilerplate_ids | duplicate_ids
+        if flagged_ids:
+            logger.warning(
+                f"Pool integrity: {len(boilerplate_ids)} boilerplate, "
+                f"{len(duplicate_ids)} duplicate candidate IDs flagged "
+                f"({len(flagged_ids)} unique). Risk penalty will apply."
+            )
 
         evaluations = []
         for i, cand in enumerate(candidates):
@@ -74,7 +119,7 @@ class RankingPipeline:
                 evaluations.append(eval_obj)
                 continue
 
-            # 2. Trust & Coherence Check
+            # 3. Trust & Coherence Check
             trust_score, calculation, anomalies = self.trust_engine.analyze(cand)
 
             # Initialize Evaluation Object
@@ -127,34 +172,44 @@ class RankingPipeline:
             # Availability score from behavioral verdict
             eval_obj.availability_score = verdicts["AvailabilityAgent"].score
 
+            # Location score (computed once, stored for fusion)
+            eval_obj.location_score = self._compute_location_score(cand)
+
             # --- Stage X: eXplain & Rank ---
             # 1. Disqualifiers (Hard Reject Gate)
             dq_verdict = self.dq_engine.evaluate(cand)
             eval_obj.risk_score = 1.0 - dq_verdict.score
             eval_obj.key_risks.extend(dq_verdict.risks)
 
-            if dq_verdict.signal == "none": # Hard Reject
+            # 2. Pool-level integrity penalty — applied AFTER DQ sets risk_score
+            # so the DQ result is not silently overwritten.
+            if cand_id in flagged_ids:
+                eval_obj.risk_score = min(1.0, eval_obj.risk_score + 0.15)
+                flag_reason = "Boilerplate/duplicate description detected across candidate pool"
+                if flag_reason not in eval_obj.key_risks:
+                    eval_obj.key_risks.append(flag_reason)
+
+            if dq_verdict.signal == "none":  # Hard Reject
                 eval_obj.final_score = 0.0
                 eval_obj.tier = "rejected"
                 eval_obj.final_score_calculation = "DQ_REJECT"
             else:
-                # 2. Fusion
+                # 3. Fusion
                 score, calc = self.fusion.fuse(eval_obj)
                 eval_obj.final_score = score
                 eval_obj.final_score_calculation = calc
 
-
-                # Assign Tier based on requested mapping
+                # Assign Tier based on 0–1 scale (matches fusion output)
                 s = eval_obj.final_score
-                if s >= 55: eval_obj.tier = "perfect_fit"
-                elif s >= 50: eval_obj.tier = "ideal_fit"
-                elif s >= 45: eval_obj.tier = "strong_fit"
-                elif s >= 40: eval_obj.tier = "good_fit"
-                elif s >= 35: eval_obj.tier = "potential_fit"
-                elif s >= 30: eval_obj.tier = "marginal_fit"
-                else: eval_obj.tier = "unlikely_fit"
+                if s >= 0.55:   eval_obj.tier = "perfect_fit"
+                elif s >= 0.50: eval_obj.tier = "ideal_fit"
+                elif s >= 0.45: eval_obj.tier = "strong_fit"
+                elif s >= 0.40: eval_obj.tier = "good_fit"
+                elif s >= 0.35: eval_obj.tier = "potential_fit"
+                elif s >= 0.30: eval_obj.tier = "marginal_fit"
+                else:           eval_obj.tier = "unlikely_fit"
 
-            # 3. Explanation
+            # 4. Explanation
             explanation = self.explainer.explain(eval_obj)
             eval_obj.justification = explanation["justification"]
             eval_obj.key_risks = explanation["key_risks"]

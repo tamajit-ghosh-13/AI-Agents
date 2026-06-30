@@ -1,9 +1,26 @@
 import os
+import hashlib
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple, Optional
 from loguru import logger
 import json
+
+# Sidecar file that stores the MD5 of the candidates JSONL file at precompute time.
+# If this file is absent OR its content doesn't match the current candidates file,
+# the cache is considered stale and is skipped (live compute is used instead).
+_EMBEDDINGS_HASH_PATH = "candidate_embeddings.hash"
+_CANDIDATES_PATH = "candidates.jsonl"
+
+
+def _md5_file(path: str) -> str:
+    """Computes MD5 of a file in 8 KB streaming chunks."""
+    h = hashlib.md5()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(8192), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
 
 class SemanticScorer:
     def __init__(self, spec_path: str):
@@ -16,7 +33,7 @@ class SemanticScorer:
 
         # Lazy loading of model to avoid expensive init during every instantiation
         self._model = None
-        
+
         # Precomputed embeddings
         self.precomputed_embeddings = None
         self.candidate_idx_map = {}
@@ -25,15 +42,50 @@ class SemanticScorer:
     def _load_precomputed_embeddings(self):
         npy_path = "candidate_embeddings.npy"
         map_path = "candidate_idx_map.json"
-        
-        if os.path.exists(npy_path) and os.path.exists(map_path):
-            logger.info(f"Loading precomputed embeddings from {npy_path}...")
-            self.precomputed_embeddings = np.load(npy_path)
-            with open(map_path, 'r') as f:
-                self.candidate_idx_map = json.load(f)
-            logger.info("Successfully loaded precomputed embeddings.")
-        else:
+
+        if not (os.path.exists(npy_path) and os.path.exists(map_path)):
             logger.info("No precomputed embeddings found. Will compute on the fly.")
+            return
+
+        # ── Staleness check ──────────────────────────────────────────────────
+        # If the .hash sidecar is absent, we don't know whether the .npy was built
+        # from the current candidates.jsonl or a previous version — warn and skip.
+        if not os.path.exists(_EMBEDDINGS_HASH_PATH):
+            logger.warning(
+                f"Embeddings cache found ({npy_path}) but has no hash sidecar "
+                f"({_EMBEDDINGS_HASH_PATH}) — freshness unknown. Skipping cache. "
+                f"Run precompute_embeddings.py to regenerate with a hash sidecar."
+            )
+            return
+
+        # Read the stored hash
+        with open(_EMBEDDINGS_HASH_PATH, 'r') as f:
+            stored_hash = f.read().strip()
+
+        # Compute the current hash of candidates.jsonl (if it exists)
+        if os.path.exists(_CANDIDATES_PATH):
+            current_hash = _md5_file(_CANDIDATES_PATH)
+            if current_hash != stored_hash:
+                logger.warning(
+                    f"Embeddings cache is STALE — hash mismatch between "
+                    f"{_CANDIDATES_PATH} (current: {current_hash[:8]}…) and "
+                    f"{_EMBEDDINGS_HASH_PATH} (stored: {stored_hash[:8]}…). "
+                    f"Skipping cache. Run precompute_embeddings.py to rebuild."
+                )
+                return
+        else:
+            logger.warning(
+                f"Cannot verify embedding freshness: {_CANDIDATES_PATH} not found. "
+                f"Skipping cache to be safe."
+            )
+            return
+
+        # ── Cache is present and verified fresh ─────────────────────────────
+        logger.info(f"Loading precomputed embeddings from {npy_path} (hash verified)...")
+        self.precomputed_embeddings = np.load(npy_path)
+        with open(map_path, 'r') as f:
+            self.candidate_idx_map = json.load(f)
+        logger.info("Successfully loaded precomputed embeddings.")
 
     @property
     def model(self):
@@ -42,7 +94,8 @@ class SemanticScorer:
             self._model = SentenceTransformer('all-MiniLM-L6-v2')
         return self._model
 
-    def create_candidate_text(self, candidate: Dict[str, Any]) -> str:
+    @staticmethod
+    def create_candidate_text(candidate: Dict[str, Any]) -> str:
         """
         Synthesizes candidate data into a single string for semantic matching.
         Gives more weight to recent roles.
@@ -83,7 +136,7 @@ class SemanticScorer:
         )[0]
 
         target_norm = np.linalg.norm(target_embedding)
-        if target_norm == 0: 
+        if target_norm == 0:
             return np.zeros(len(candidates))
         norm_target = target_embedding / target_norm
 

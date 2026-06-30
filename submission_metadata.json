@@ -1,7 +1,11 @@
 {
-  "timestamp": "2026-06-29 17:29:13",
+  "timestamp": "2026-06-30 13:14:48",
   "platform": "Darwin",
   "platform_release": "25.2.0",
   "fairness_check": "Passed",
-  "honeypot_count": 0
+  "honeypot_count": 61,
+  "candidates_hash": "417ae7339f6f6036d1ab6f283dbc7c51",
+  "spec_hash": "7eb77442505246776bfdcd42ac590d5f",
+  "disqualifiers_hash": "9d7e29cb93a8d4496bec339593b7c1dd",
+  "embeddings_hash": "417ae7339f6f6036d1ab6f283dbc7c51"
 }
