@@ -1,7 +1,7 @@
 [project]
 name = "redrob-ranker"
 version = "2.0.0"
-description = "ShortlistIQ — Multi-signal AI candidate ranking pipeline for the Redrob India Runs Data & AI Challenge"
+description = "*ShortlistIQ — Multi-signal AI candidate ranking pipeline for the Redrob India Runs Data & AI Challenge"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
