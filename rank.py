@@ -6,22 +6,22 @@ from src.orchestration.pipeline import RankingPipeline
 from src.synthesis import ReasonSynthesizer
 from src.auditor import SubmissionAuditor
 
-def update_reasoning_prefix(score_str: str, original_reasoning: str) -> str:
+def update_reasoning_prefix(tier: str, original_reasoning: str) -> str:
     import re
-    try:
-        s = float(score_str)
-    except ValueError:
-        s = 0.0
-
-    # Thresholds on 0–1 scale matching pipeline.py tier assignments
-    if s >= 0.55:   prefix = "[perfect_fit]"
-    elif s >= 0.50: prefix = "[ideal_fit]"
-    elif s >= 0.45: prefix = "[strong_fit]"
-    elif s >= 0.40: prefix = "[good_fit]"
-    elif s >= 0.35: prefix = "[potential_fit]"
-    elif s >= 0.30: prefix = "[marginal_fit]"
-    else:           prefix = "[unlikely_fit]"
-
+    
+    # Map tier names to the required bracket labels
+    tier_map = {
+        "perfect_fit": "[perfect_fit]",
+        "ideal_fit": "[ideal_fit]",
+        "strong_fit": "[strong_fit]",
+        "good_fit": "[good_fit]",
+        "potential_fit": "[potential_fit]",
+        "marginal_fit": "[marginal_fit]",
+        "unlikely_fit": "[unlikely_fit]",
+        "rejected": "[unlikely_fit]"
+    }
+    
+    prefix = tier_map.get(tier, "[unlikely_fit]")
     return re.sub(r'^\[.*?\]', prefix, original_reasoning)
 
 def load_candidates(file_path: str):
@@ -61,7 +61,9 @@ def main():
     results = pipeline.run(candidates, jd_text)
 
     # 4. Synthesize Reasoning for Top 100
-    for res in results[:100]:
+    # Inject rank position so synthesizer can calibrate tone to position, not just tier.
+    for i, res in enumerate(results[:100]):
+        res['_rank'] = i + 1
         res['reasoning'] = synthesizer.synthesize(res)
 
     # Ensure we have reasoning for the audit if it needs it,
@@ -87,7 +89,8 @@ def main():
             f_score_str = f"{res['final_score']:.4f}"
             trust_score = res.get('trust_score', '')
             reasoning_base = res.get('reasoning', '')
-            new_reas = update_reasoning_prefix(f_score_str, reasoning_base)
+            tier = res.get('tier', 'unlikely_fit')
+            new_reas = update_reasoning_prefix(tier, reasoning_base)
             final_reasoning = f"trust_score = {trust_score} | {new_reas}"
             writer.writerow([cid, rank, f_score_str, final_reasoning])
 

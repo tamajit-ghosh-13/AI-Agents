@@ -181,13 +181,15 @@ class RankingPipeline:
             eval_obj.risk_score = 1.0 - dq_verdict.score
             eval_obj.key_risks.extend(dq_verdict.risks)
 
-            # 2. Pool-level integrity penalty — applied AFTER DQ sets risk_score
-            # so the DQ result is not silently overwritten.
-            if cand_id in flagged_ids:
-                eval_obj.risk_score = min(1.0, eval_obj.risk_score + 0.15)
-                flag_reason = "Boilerplate/duplicate description detected across candidate pool"
-                if flag_reason not in eval_obj.key_risks:
-                    eval_obj.key_risks.append(flag_reason)
+            # 2. Pool-level integrity penalty 
+            # DISABLED: The 100K candidate dataset is synthetically generated and only 
+            # contains ~30 unique job descriptions copied perfectly across 100,000 people. 
+            # A boilerplate detector will flag 100% of the pool, ruining the actual scores.
+            # if cand_id in flagged_ids:
+            #     eval_obj.risk_score = min(1.0, eval_obj.risk_score + 0.15)
+            #     flag_reason = "Boilerplate/duplicate description detected across candidate pool"
+            #     if flag_reason not in eval_obj.key_risks:
+            #         eval_obj.key_risks.append(flag_reason)
 
             if dq_verdict.signal == "none":  # Hard Reject
                 eval_obj.final_score = 0.0
@@ -201,12 +203,12 @@ class RankingPipeline:
 
                 # Assign Tier based on 0–1 scale (matches fusion output)
                 s = eval_obj.final_score
-                if s >= 0.55:   eval_obj.tier = "perfect_fit"
-                elif s >= 0.50: eval_obj.tier = "ideal_fit"
-                elif s >= 0.45: eval_obj.tier = "strong_fit"
-                elif s >= 0.40: eval_obj.tier = "good_fit"
-                elif s >= 0.35: eval_obj.tier = "potential_fit"
-                elif s >= 0.30: eval_obj.tier = "marginal_fit"
+                if s >= 0.75:   eval_obj.tier = "perfect_fit"
+                elif s >= 0.70: eval_obj.tier = "ideal_fit"
+                elif s >= 0.65: eval_obj.tier = "strong_fit"
+                elif s >= 0.60: eval_obj.tier = "good_fit"
+                elif s >= 0.55: eval_obj.tier = "potential_fit"
+                elif s >= 0.50: eval_obj.tier = "marginal_fit"
                 else:           eval_obj.tier = "unlikely_fit"
 
             # 4. Explanation

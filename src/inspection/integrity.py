@@ -60,8 +60,10 @@ class IntegrityGuard:
         level (not per-candidate blob). This catches the actual data pattern where one
         shared sentence is embedded in otherwise-distinct career histories.
 
-        Optimized to O(N) using an exact 10-gram overlap algorithm, replacing the
-        O(N^2) pairwise Jaccard which hangs on pools of 100,000+ candidates.
+        Optimized to O(N) using an exact 40-gram overlap algorithm, replacing the
+        O(N^2) pairwise Jaccard which hangs on pools of 100,000+ candidates. A 40-word
+        sequence guarantees true copy-paste behavior rather than accidental collisions
+        on common tech phrasing.
         """
         ngram_to_cids = {}
         flagged: Set[str] = set()
@@ -75,12 +77,12 @@ class IntegrityGuard:
                 if not desc:
                     continue
                 tokens = desc.split()
-                if len(tokens) < 10:
+                if len(tokens) < 40:
                     continue
                 
-                # Generate 10-grams to detect copied sentences
-                for i in range(len(tokens) - 9):
-                    ngram = tuple(tokens[i:i+10])
+                # Generate 40-grams to detect copied sentences
+                for i in range(len(tokens) - 39):
+                    ngram = tuple(tokens[i:i+40])
                     if ngram not in ngram_to_cids:
                         ngram_to_cids[ngram] = set()
                     ngram_to_cids[ngram].add(cid)

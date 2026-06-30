@@ -39,7 +39,6 @@ cd AI-Agents
 
 ```bash
 pip install uv
-uv init
 uv sync
 ```
 
@@ -58,7 +57,6 @@ The `candidate_embeddings.npy` (~150 MB) and `candidate_idx_map.json` files are 
 ```bash
 # Make sure Git LFS is installed (one-time machine setup)
 git lfs install
-
 ```
 
 This downloads `candidate_embeddings.npy` in seconds (bandwidth permitting). The ranking step then completes in **under 1 minute**.
@@ -97,7 +95,6 @@ cd AI-Agents
 
 
 # Step 2 — install Python dependencies
-uv init
 uv sync
 
 # Step 3 (optional) — convert JD from .docx to .txt
@@ -124,15 +121,15 @@ python rank.py --input candidates.jsonl --output submission.csv --jd job_descrip
 
 | Label             | Score range |
 | ----------------- | ----------- |
-| `[perfect_fit]`   | ≥ 55        |
-| `[ideal_fit]`     | ≥ 50        |
-| `[strong_fit]`    | ≥ 45        |
-| `[good_fit]`      | ≥ 40        |
-| `[potential_fit]` | ≥ 35        |
-| `[marginal_fit]`  | ≥ 30        |
-| `[unlikely_fit]`  | < 30        |
+| `[perfect_fit]`   | ≥ 0.75      |
+| `[ideal_fit]`     | ≥ 0.70      |
+| `[strong_fit]`    | ≥ 0.65      |
+| `[good_fit]`      | ≥ 0.60      |
+| `[potential_fit]` | ≥ 0.55      |
+| `[marginal_fit]`  | ≥ 0.50      |
+| `[unlikely_fit]`  | < 0.50      |
 
-**No need for ≥ 60 is because the practical feasible cap for final_score is 58**
+**No need for ≥ 80 is because the practical feasible cap for final_score is 77**
 
 ![alt text](image.png)
 
@@ -177,10 +174,10 @@ candidates.jsonl + job_description.txt
 └──────────────────────────┬──────────────────────────────┘
                            │
                            ▼
-                    submission.csv (top 100)
+                     submission.csv (top 100)
 ```
 
----
+## ![alt text](image-1.png)
 
 ## Repository Structure
 
@@ -191,7 +188,7 @@ redrob_ranker/
 ├── extract_docx.py             # .docx → .txt converter for JD files
 ├── requirements.txt            # Python dependencies
 ├── pyproject.toml              # Project metadata and dependency specs
-├── submission_metadata.yaml    # Hackathon submission metadata
+├── submission_metadata.json    # Hackathon submission metadata
 ├── candidates.jsonl            # Input candidate pool
 ├── candidate_embeddings.npy    # Pre-computed embeddings (Git LFS)
 ├── candidate_idx_map.json      # Embedding index → candidate_id map
@@ -207,7 +204,6 @@ redrob_ranker/
     ├── ranking/                # Disqualifiers, fusion, scoring
     ├── reasoning/              # Per-dimension reasoning agents
     ├── inspection/             # Honeypot & trust checks
-    ├── evaluation/             # Offline evaluation utilities
     └── query/                  # JD parsing utilities
 ```
 
