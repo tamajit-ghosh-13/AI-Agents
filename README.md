@@ -1,5 +1,7 @@
 # \*ShortlistIQ — Redrob AI Candidate Ranker
 
+![alt text](image-2.png)
+
 > **Team:** \*ShortlistIQ · **Challenge:** India Runs Data & AI · **Stage:** 3
 
 A multi-signal candidate ranking pipeline that takes a raw `.jsonl` candidate pool and a job description, applies a layered trust-and-integrity filter, multi-dimensional reasoning agents, and a semantic fusion engine to produce a ranked `submission.csv` of the top 100 candidates — all within **5 minutes on CPU**.
